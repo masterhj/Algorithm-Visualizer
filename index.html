@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Visualizer 3D</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>Algorithm Visualizer 3D</h1>
+                <div class="logo-glow"></div>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-algorithm="sorting">Sorting</button>
+                <button class="nav-btn" data-algorithm="searching">Searching</button>
+                <button class="nav-btn" data-algorithm="pathfinding">Pathfinding</button>
+                <button class="nav-btn" data-algorithm="graph">Graph</button>
+            </nav>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="algorithm-select">Algorithm:</label>
+                <select id="algorithm-select" class="glass-select">
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="quick">Quick Sort</option>
+                    <option value="merge">Merge Sort</option>
+                    <option value="heap">Heap Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="selection">Selection Sort</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="array-size">Array Size:</label>
+                <input type="range" id="array-size" min="10" max="100" value="50" class="glass-slider">
+                <span id="size-value">50</span>
+            </div>
+
+            <div class="control-group">
+                <label for="speed">Speed:</label>
+                <input type="range" id="speed" min="1" max="10" value="5" class="glass-slider">
+                <span id="speed-value">5</span>
+            </div>
+
+            <div class="control-buttons">
+                <button id="generate-btn" class="glass-btn primary">Generate Array</button>
+                <button id="start-btn" class="glass-btn success">Start</button>
+                <button id="pause-btn" class="glass-btn warning">Pause</button>
+                <button id="reset-btn" class="glass-btn danger">Reset</button>
+            </div>
+        </div>
+
+        <!-- Visualization Area -->
+        <div class="visualization-container">
+            <div class="stats-panel">
+                <div class="stat-item">
+                    <span class="stat-label">Comparisons:</span>
+                    <span id="comparisons" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Swaps:</span>
+                    <span id="swaps" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time:</span>
+                    <span id="time" class="stat-value">0.00s</span>
+                </div>
+            </div>
+
+            <div id="visualization-area" class="visualization-area">
+                <!-- Bars will be generated here -->
+            </div>
+
+            <div class="complexity-info">
+                <div class="complexity-item">
+                    <span class="complexity-label">Time Complexity:</span>
+                    <span id="time-complexity" class="complexity-value">O(n²)</span>
+                </div>
+                <div class="complexity-item">
+                    <span class="complexity-label">Space Complexity:</span>
+                    <span id="space-complexity" class="complexity-value">O(1)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Description -->
+        <div class="description-panel">
+            <h3>Algorithm Description</h3>
+            <p id="algorithm-description">
+                Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.
+            </p>
+        </div>
+
+        <!-- Pathfinding Grid (hidden by default) -->
+        <div id="pathfinding-grid" class="pathfinding-grid hidden">
+            <!-- Grid will be generated here -->
+        </div>
+
+        <!-- Graph Canvas (hidden by default) -->
+        <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-cube"></div>
+            <div class="loader-text">Loading Algorithm Visualizer...</div>
+        </div>
+    </div>
+
+    <!-- Particle Background -->
+    <div id="particle-background"></div>
+
+    <script src="utils.js"></script>
+    <script src="algorithms.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="pathfinding.js"></script>
+    <script src="graph.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
