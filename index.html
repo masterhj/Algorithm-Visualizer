@@ -3,17 +3,675 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Algorithm Visualizer 3D</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Algorithm Visualizer 3D - Production</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #00f5ff;
+            --secondary-color: #ff006e;
+            --accent-color: #ffd700;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --success-color: #00ff88;
+            --warning-color: #ffaa00;
+            --danger-color: #ff4444;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            perspective: 1000px;
+        }
+
+       
+        #particle-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 255, 198, 0.3) 0%, transparent 50%);
+            animation: particleFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+       
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader {
+            text-align: center;
+        }
+
+        .loader-cube {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            margin: 0 auto 20px;
+            transform-style: preserve-3d;
+            animation: cubeRotate 2s infinite;
+            position: relative;
+        }
+
+        @keyframes cubeRotate {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .loader-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            animation: textGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 10px var(--primary-color); }
+            100% { text-shadow: 0 0 20px var(--primary-color), 0 0 30px var(--primary-color); }
+        }
+
+     
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            transform-style: preserve-3d;
+        }
+
+     
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .logo {
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .logo h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-5px) rotateX(5deg); }
+        }
+
+      
+        .nav {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px) rotateX(5deg);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.3);
+            border-color: var(--primary-color);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--bg-primary);
+            transform: translateY(-2px) rotateX(5deg);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.5);
+        }
+
+       
+        .control-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            transform: perspective(1000px) rotateX(2deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .glass-select,
+        .glass-slider {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 10px;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-select:focus,
+        .glass-slider:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .glass-slider {
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--glass-bg);
+            border-radius: 5px;
+        }
+
+        .glass-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            grid-column: 1 / -1;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .glass-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .glass-btn:hover:not(:disabled) {
+            transform: translateY(-3px) rotateX(5deg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-btn.primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .glass-btn.primary:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: var(--bg-primary);
+            box-shadow: 0 10px 30px rgba(0, 245, 255, 0.5);
+        }
+
+        .glass-btn.success {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .glass-btn.success:hover:not(:disabled) {
+            background: var(--success-color);
+            color: var(--bg-primary);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .glass-btn.warning {
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .glass-btn.warning:hover:not(:disabled) {
+            background: var(--warning-color);
+            color: var(--bg-primary);
+            box-shadow: 0 10px 30px rgba(255, 170, 0, 0.5);
+        }
+
+        .glass-btn.danger {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .glass-btn.danger:hover:not(:disabled) {
+            background: var(--danger-color);
+            color: var(--bg-primary);
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.5);
+        }
+
+
+        .visualization-container {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            transform: perspective(1000px) rotateX(1deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            transform-style: preserve-3d;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+            animation: statGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes statGlow {
+            0% { text-shadow: 0 0 10px rgba(0, 245, 255, 0.5); }
+            100% { text-shadow: 0 0 20px rgba(0, 245, 255, 0.8); }
+        }
+
+       
+        .visualization-area {
+            min-height: 400px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 2px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .bar {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+            min-width: 4px;
+        }
+
+        .bar.comparing {
+            background: linear-gradient(45deg, var(--warning-color), var(--accent-color));
+            transform: translateY(-10px) rotateX(10deg);
+            box-shadow: 0 10px 30px rgba(255, 170, 0, 0.5);
+        }
+
+        .bar.swapping {
+            background: linear-gradient(45deg, var(--danger-color), var(--secondary-color));
+            transform: translateY(-15px) rotateX(15deg);
+            box-shadow: 0 15px 40px rgba(255, 68, 68, 0.5);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .bar.sorted {
+            background: linear-gradient(45deg, var(--success-color), var(--primary-color));
+            transform: translateY(-5px) rotateX(5deg);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateY(-15px) rotateX(15deg); }
+            25% { transform: translateY(-15px) rotateX(15deg) rotateZ(2deg); }
+            75% { transform: translateY(-15px) rotateX(15deg) rotateZ(-2deg); }
+        }
+
+        .complexity-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .complexity-item {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .complexity-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .complexity-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+      
+        .description-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            transform: perspective(1000px) rotateX(1deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .description-panel h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .description-panel p {
+            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+       
+        .pathfinding-grid {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            transform: perspective(1000px) rotateX(1deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .grid-cell {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            aspect-ratio: 1;
+            min-width: 20px;
+            min-height: 20px;
+        }
+
+        .grid-cell:hover {
+            transform: translateY(-2px) rotateX(10deg);
+            box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
+        }
+
+        .grid-cell.wall {
+            background: linear-gradient(45deg, var(--bg-primary), var(--bg-secondary));
+            border-color: var(--text-secondary);
+        }
+
+        .grid-cell.start {
+            background: linear-gradient(45deg, var(--success-color), var(--primary-color));
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .grid-cell.end {
+            background: linear-gradient(45deg, var(--danger-color), var(--secondary-color));
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        .grid-cell.path {
+            background: linear-gradient(45deg, var(--accent-color), var(--warning-color));
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            animation: pathGlow 1s ease-in-out infinite alternate;
+        }
+
+        .grid-cell.visited {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            opacity: 0.6;
+        }
+
+        @keyframes pathGlow {
+            0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+            100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+        }
+
+       
+        .graph-canvas {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            transform: perspective(1000px) rotateX(1deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            width: 100%;
+            height: 400px;
+        }
+
+       
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes messageSlide {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+       
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .nav {
+                justify-content: center;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .stats-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .complexity-info {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .visualization-area {
+                min-height: 300px;
+            }
+            
+            .bar {
+                min-width: 3px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+            
+            .nav-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .glass-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .visualization-area {
+                min-height: 250px;
+                gap: 1px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+      
         <header class="header">
             <div class="logo">
                 <h1>Algorithm Visualizer 3D</h1>
-                <div class="logo-glow"></div>
             </div>
             <nav class="nav">
                 <button class="nav-btn active" data-algorithm="sorting">Sorting</button>
@@ -23,7 +681,7 @@
             </nav>
         </header>
 
-        <!-- Control Panel -->
+       
         <div class="control-panel">
             <div class="control-group">
                 <label for="algorithm-select">Algorithm:</label>
@@ -52,12 +710,12 @@
             <div class="control-buttons">
                 <button id="generate-btn" class="glass-btn primary">Generate Array</button>
                 <button id="start-btn" class="glass-btn success">Start</button>
-                <button id="pause-btn" class="glass-btn warning">Pause</button>
+                <button id="pause-btn" class="glass-btn warning" disabled>Pause</button>
                 <button id="reset-btn" class="glass-btn danger">Reset</button>
             </div>
         </div>
 
-        <!-- Visualization Area -->
+     
         <div class="visualization-container">
             <div class="stats-panel">
                 <div class="stat-item">
@@ -90,7 +748,7 @@
             </div>
         </div>
 
-        <!-- Algorithm Description -->
+       
         <div class="description-panel">
             <h3>Algorithm Description</h3>
             <p id="algorithm-description">
@@ -99,30 +757,1520 @@
         </div>
 
         <!-- Pathfinding Grid (hidden by default) -->
-        <div id="pathfinding-grid" class="pathfinding-grid hidden">
-            <!-- Grid will be generated here -->
+        <div id="pathfinding-section" class="pathfinding-grid hidden">
+            <div class="control-buttons" style="margin-bottom: 20px;">
+                <button id="pathfind-start" class="glass-btn success">Find Path</button>
+                <button id="pathfind-clear" class="glass-btn danger">Clear Grid</button>
+                <select id="pathfind-algorithm" class="glass-select" style="margin-left: 10px;">
+                    <option value="astar">A* Algorithm</option>
+                    <option value="dijkstra">Dijkstra's Algorithm</option>
+                    <option value="bfs">Breadth-First Search</option>
+                    <option value="dfs">Depth-First Search</option>
+                </select>
+            </div>
+            <div id="pathfinding-grid" class="grid">
+             
+            </div>
+            <div style="margin-top: 15px; color: var(--text-secondary); text-align: center;">
+                <p>Click to add walls • Green: Start • Red: End • Yellow: Path</p>
+            </div>
         </div>
 
-        <!-- Graph Canvas (hidden by default) -->
-        <canvas id="graph-canvas" class="graph-canvas hidden"></canvas>
+      
+        <div id="graph-section" class="hidden">
+            <canvas id="graph-canvas" class="graph-canvas"></canvas>
+        </div>
     </div>
 
-    <!-- Loading Screen -->
+   
     <div id="loading-screen" class="loading-screen">
         <div class="loader">
             <div class="loader-cube"></div>
             <div class="loader-text">Loading Algorithm Visualizer...</div>
         </div>
     </div>
-
-    <!-- Particle Background -->
+ 
     <div id="particle-background"></div>
 
-    <script src="utils.js"></script>
-    <script src="algorithms.js"></script>
-    <script src="visualizer.js"></script>
-    <script src="pathfinding.js"></script>
-    <script src="graph.js"></script>
-    <script src="main.js"></script>
+    <script>
+        
+        class AlgorithmVisualizer {
+            constructor() {
+                this.array = [];
+                this.isRunning = false;
+                this.isPaused = false;
+                this.speed = 5;
+                this.startTime = 0;
+                this.timerInterval = null;
+                this.currentAlgorithm = 'bubble';
+                this.currentMode = 'sorting';
+                this.comparisons = 0;
+                this.swaps = 0;
+                this.pathfindingGrid = null;
+                
+                this.init();
+            }
+
+            init() {
+                this.initializeElements();
+                this.setupEventListeners();
+                this.generateNewArray();
+                this.hideLoading();
+            }
+
+            initializeElements() {
+                this.visualizationArea = document.getElementById('visualization-area');
+                this.comparisonsElement = document.getElementById('comparisons');
+                this.swapsElement = document.getElementById('swaps');
+                this.timeElement = document.getElementById('time');
+                this.timeComplexityElement = document.getElementById('time-complexity');
+                this.spaceComplexityElement = document.getElementById('space-complexity');
+                this.descriptionElement = document.getElementById('algorithm-description');
+                this.sizeSlider = document.getElementById('array-size');
+                this.speedSlider = document.getElementById('speed');
+                this.sizeValueElement = document.getElementById('size-value');
+                this.speedValueElement = document.getElementById('speed-value');
+                this.algorithmSelect = document.getElementById('algorithm-select');
+            }
+
+            setupEventListeners() {
+                
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.switchMode(e.target.dataset.algorithm);
+                    });
+                });
+
+               
+                this.sizeSlider.addEventListener('input', (e) => {
+                    this.sizeValueElement.textContent = e.target.value;
+                    if (!this.isRunning) {
+                        this.generateNewArray();
+                    }
+                });
+
+                
+                this.speedSlider.addEventListener('input', (e) => {
+                    this.speed = parseInt(e.target.value);
+                    this.speedValueElement.textContent = e.target.value;
+                });
+
+                
+                this.algorithmSelect.addEventListener('change', (e) => {
+                    this.currentAlgorithm = e.target.value;
+                    this.updateAlgorithmInfo(e.target.value);
+                });
+
+               
+                document.getElementById('generate-btn').addEventListener('click', () => {
+                    if (!this.isRunning) this.generateNewArray();
+                });
+
+                document.getElementById('start-btn').addEventListener('click', () => {
+                    this.startVisualization();
+                });
+
+                document.getElementById('pause-btn').addEventListener('click', () => {
+                    this.pauseVisualization();
+                });
+
+                document.getElementById('reset-btn').addEventListener('click', () => {
+                    this.resetVisualization();
+                });
+
+                
+                document.getElementById('pathfind-start').addEventListener('click', () => {
+                    this.startPathfinding();
+                });
+
+                document.getElementById('pathfind-clear').addEventListener('click', () => {
+                    this.clearPathfindingGrid();
+                });
+            }
+
+            switchMode(mode) {
+                this.currentMode = mode;
+                
+               
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-algorithm="${mode}"]`).classList.add('active');
+
+               
+                this.resetVisualization();
+                
+                if (mode === 'sorting') {
+                    this.showSortingMode();
+                } else if (mode === 'pathfinding') {
+                    this.showPathfindingMode();
+                } else if (mode === 'graph') {
+                    this.showGraphMode();
+                } else if (mode === 'searching') {
+                    this.showSearchingMode();
+                }
+            }
+
+            showSortingMode() {
+                document.querySelector('.visualization-container').classList.remove('hidden');
+                document.getElementById('pathfinding-section').classList.add('hidden');
+                document.getElementById('graph-section').classList.add('hidden');
+                
+                
+                this.algorithmSelect.innerHTML = `
+                    <option value="bubble">Bubble Sort</option>
+                    <option value="quick">Quick Sort</option>
+                    <option value="merge">Merge Sort</option>
+                    <option value="heap">Heap Sort</option>
+                    <option value="insertion">Insertion Sort</option>
+                    <option value="selection">Selection Sort</option>
+                `;
+                this.currentAlgorithm = 'bubble';
+                this.updateAlgorithmInfo('bubble');
+                this.generateNewArray();
+            }
+
+            showPathfindingMode() {
+                document.querySelector('.visualization-container').classList.add('hidden');
+                document.getElementById('pathfinding-section').classList.remove('hidden');
+                document.getElementById('graph-section').classList.add('hidden');
+                
+                this.initializePathfindingGrid();
+            }
+
+            showGraphMode() {
+                document.querySelector('.visualization-container').classList.add('hidden');
+                document.getElementById('pathfinding-section').classList.add('hidden');
+                document.getElementById('graph-section').classList.remove('hidden');
+                
+                this.initializeGraphCanvas();
+            }
+
+            showSearchingMode() {
+                document.querySelector('.visualization-container').classList.remove('hidden');
+                document.getElementById('pathfinding-section').classList.add('hidden');
+                document.getElementById('graph-section').classList.add('hidden');
+                
+              
+                this.algorithmSelect.innerHTML = `
+                    <option value="linear">Linear Search</option>
+                    <option value="binary">Binary Search</option>
+                    <option value="jump">Jump Search</option>
+                    <option value="interpolation">Interpolation Search</option>
+                `;
+                this.currentAlgorithm = 'linear';
+                this.updateAlgorithmInfo('linear');
+                this.generateNewArray();
+            }
+
+            generateNewArray() {
+                const size = parseInt(this.sizeSlider.value);
+                this.array = this.generateRandomArray(size, 10, 400);
+                this.renderBars();
+                this.resetStats();
+            }
+
+            generateRandomArray(size, min, max) {
+                return Array.from({ length: size }, () => 
+                    Math.floor(Math.random() * (max - min + 1)) + min
+                );
+            }
+
+            renderBars() {
+                this.visualizationArea.innerHTML = '';
+                const maxValue = Math.max(...this.array);
+                const containerWidth = this.visualizationArea.clientWidth;
+                const barWidth = Math.max(4, (containerWidth - (this.array.length * 2)) / this.array.length);
+
+                this.array.forEach((value, index) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = `${(value / maxValue) * 350}px`;
+                    bar.style.width = `${barWidth}px`;
+                    bar.dataset.value = value;
+                    bar.dataset.index = index;
+                    bar.title = `Value: ${value}`;
+                    this.visualizationArea.appendChild(bar);
+                });
+            }
+
+            async startVisualization() {
+                if (this.isRunning) return;
+
+                this.isRunning = true;
+                this.isPaused = false;
+                this.updateButtonStates();
+                this.startTimer();
+
+                try {
+                    if (this.currentMode === 'sorting') {
+                        await this.runSortingAlgorithm();
+                    } else if (this.currentMode === 'searching') {
+                        await this.runSearchingAlgorithm();
+                    }
+                } catch (error) {
+                    console.error('Visualization error:', error);
+                    this.showMessage('An error occurred during visualization', 'error');
+                }
+
+                this.isRunning = false;
+                this.updateButtonStates();
+                this.stopTimer();
+            }
+
+            pauseVisualization() {
+                this.isPaused = !this.isPaused;
+                document.getElementById('pause-btn').textContent = this.isPaused ? 'Resume' : 'Pause';
+            }
+
+            resetVisualization() {
+                this.isRunning = false;
+                this.isPaused = false;
+                this.stopTimer();
+                this.resetStats();
+                this.updateButtonStates();
+           
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                bars.forEach(bar => {
+                    bar.classList.remove('comparing', 'swapping', 'sorted');
+                    bar.style.transform = '';
+                });
+
+                if (this.currentMode === 'sorting' || this.currentMode === 'searching') {
+                    this.generateNewArray();
+                }
+            }
+
+            async runSortingAlgorithm() {
+                const algorithms = {
+                    bubble: this.bubbleSort.bind(this),
+                    quick: this.quickSort.bind(this),
+                    merge: this.mergeSort.bind(this),
+                    heap: this.heapSort.bind(this),
+                    insertion: this.insertionSort.bind(this),
+                    selection: this.selectionSort.bind(this)
+                };
+
+                if (algorithms[this.currentAlgorithm]) {
+                    await algorithms[this.currentAlgorithm](this.array);
+                    this.showComplete();
+                }
+            }
+
+            async runSearchingAlgorithm() {
+                
+                const target = this.array[Math.floor(Math.random() * this.array.length)];
+                this.showMessage(`Searching for value: ${target}`, 'info');
+
+                const algorithms = {
+                    linear: this.linearSearch.bind(this),
+                    binary: this.binarySearch.bind(this),
+                    jump: this.jumpSearch.bind(this),
+                    interpolation: this.interpolationSearch.bind(this)
+                };
+
+                if (algorithms[this.currentAlgorithm]) {
+                    const result = await algorithms[this.currentAlgorithm](this.array, target);
+                    if (result !== -1) {
+                        this.showMessage(`Found at index: ${result}`, 'success');
+                    } else {
+                        this.showMessage('Value not found', 'warning');
+                    }
+                }
+            }
+
+            
+            async bubbleSort(array) {
+                this.resetStats();
+                const arr = [...array];
+                const n = arr.length;
+
+                for (let i = 0; i < n - 1; i++) {
+                    for (let j = 0; j < n - i - 1; j++) {
+                        if (!this.isRunning) return;
+                        await this.waitIfPaused();
+                        
+                        this.comparisons++;
+                        this.updateStats();
+                        this.highlightBars([j, j + 1], 'comparing');
+                        
+                        await this.delay(this.getSpeed());
+                        
+                        if (arr[j] > arr[j + 1]) {
+                            [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                            this.swaps++;
+                            this.updateStats();
+                            this.highlightBars([j, j + 1], 'swapping');
+                            this.updateBars(arr);
+                            
+                            await this.delay(this.getSpeed());
+                        }
+                        
+                        this.removeHighlight([j, j + 1]);
+                    }
+                    this.markSorted([n - i - 1]);
+                }
+                this.markSorted([0]);
+            }
+
+            async quickSort(array, low = 0, high = array.length - 1) {
+                if (low === 0 && high === array.length - 1) {
+                    this.resetStats();
+                }
+                
+                if (low < high && this.isRunning) {
+                    await this.waitIfPaused();
+                    const pivotIndex = await this.partition(array, low, high);
+                    await this.quickSort(array, low, pivotIndex - 1);
+                    await this.quickSort(array, pivotIndex + 1, high);
+                }
+                
+                if (low === 0 && high === array.length - 1) {
+                    this.markAllSorted();
+                }
+            }
+
+            async partition(array, low, high) {
+                const pivot = array[high];
+                let i = low - 1;
+                
+                for (let j = low; j < high; j++) {
+                    if (!this.isRunning) return i + 1;
+                    await this.waitIfPaused();
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([j, high], 'comparing');
+                    
+                    await this.delay(this.getSpeed());
+                    
+                    if (array[j] < pivot) {
+                        i++;
+                        if (i !== j) {
+                            [array[i], array[j]] = [array[j], array[i]];
+                            this.swaps++;
+                            this.updateStats();
+                            this.highlightBars([i, j], 'swapping');
+                            this.updateBars(array);
+                            await this.delay(this.getSpeed());
+                        }
+                    }
+                    this.removeHighlight([j, high, i]);
+                }
+                
+                [array[i + 1], array[high]] = [array[high], array[i + 1]];
+                this.swaps++;
+                this.updateStats();
+                this.updateBars(array);
+                this.markSorted([i + 1]);
+                
+                return i + 1;
+            }
+
+            async mergeSort(array, left = 0, right = array.length - 1) {
+                if (left === 0 && right === array.length - 1) {
+                    this.resetStats();
+                }
+                
+                if (left < right && this.isRunning) {
+                    await this.waitIfPaused();
+                    const middle = Math.floor((left + right) / 2);
+                    await this.mergeSort(array, left, middle);
+                    await this.mergeSort(array, middle + 1, right);
+                    await this.merge(array, left, middle, right);
+                }
+                
+                if (left === 0 && right === array.length - 1) {
+                    this.markAllSorted();
+                }
+            }
+
+            async merge(array, left, middle, right) {
+                const leftArr = array.slice(left, middle + 1);
+                const rightArr = array.slice(middle + 1, right + 1);
+                let i = 0, j = 0, k = left;
+                
+                while (i < leftArr.length && j < rightArr.length) {
+                    if (!this.isRunning) return;
+                    await this.waitIfPaused();
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([k], 'comparing');
+                    
+                    await this.delay(this.getSpeed());
+                    
+                    if (leftArr[i] <= rightArr[j]) {
+                        array[k] = leftArr[i];
+                        i++;
+                    } else {
+                        array[k] = rightArr[j];
+                        j++;
+                    }
+                    
+                    this.updateBars(array);
+                    this.removeHighlight([k]);
+                    k++;
+                }
+                
+                while (i < leftArr.length && this.isRunning) {
+                    array[k] = leftArr[i];
+                    this.updateBars(array);
+                    i++;
+                    k++;
+                }
+                
+                while (j < rightArr.length && this.isRunning) {
+                    array[k] = rightArr[j];
+                    this.updateBars(array);
+                    j++;
+                    k++;
+                }
+            }
+
+            async heapSort(array) {
+                this.resetStats();
+                const n = array.length;
+                
+                for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                    await this.heapify(array, n, i);
+                }
+                
+                for (let i = n - 1; i > 0; i--) {
+                    if (!this.isRunning) return;
+                    await this.waitIfPaused();
+                    
+                    [array[0], array[i]] = [array[i], array[0]];
+                    this.swaps++;
+                    this.updateStats();
+                    this.highlightBars([0, i], 'swapping');
+                    this.updateBars(array);
+                    
+                    await this.delay(this.getSpeed());
+                    this.removeHighlight([0, i]);
+                    this.markSorted([i]);
+                    
+                    await this.heapify(array, i, 0);
+                }
+                this.markSorted([0]);
+            }
+
+            async heapify(array, n, i) {
+                let largest = i;
+                const left = 2 * i + 1;
+                const right = 2 * i + 2;
+                
+                if (left < n) {
+                    this.comparisons++;
+                    this.updateStats();
+                    if (array[left] > array[largest]) {
+                        largest = left;
+                    }
+                }
+                
+                if (right < n) {
+                    this.comparisons++;
+                    this.updateStats();
+                    if (array[right] > array[largest]) {
+                        largest = right;
+                    }
+                }
+                
+                if (largest !== i) {
+                    [array[i], array[largest]] = [array[largest], array[i]];
+                    this.swaps++;
+                    this.updateStats();
+                    this.updateBars(array);
+                    await this.heapify(array, n, largest);
+                }
+            }
+
+            async insertionSort(array) {
+                this.resetStats();
+                const n = array.length;
+                
+                for (let i = 1; i < n; i++) {
+                    if (!this.isRunning) return;
+                    await this.waitIfPaused();
+                    
+                    const key = array[i];
+                    let j = i - 1;
+                    
+                    this.highlightBars([i], 'comparing');
+                    
+                    while (j >= 0 && this.isRunning) {
+                        await this.waitIfPaused();
+                        this.comparisons++;
+                        this.updateStats();
+                        this.highlightBars([j], 'comparing');
+                        
+                        await this.delay(this.getSpeed());
+                        
+                        if (array[j] <= key) break;
+                        
+                        array[j + 1] = array[j];
+                        this.swaps++;
+                        this.updateStats();
+                        this.updateBars(array);
+                        
+                        await this.delay(this.getSpeed());
+                        this.removeHighlight([j]);
+                        j--;
+                    }
+                    
+                    array[j + 1] = key;
+                    this.updateBars(array);
+                    this.removeHighlight([i]);
+                }
+                this.markAllSorted();
+            }
+
+            async selectionSort(array) {
+                this.resetStats();
+                const n = array.length;
+                
+                for (let i = 0; i < n - 1; i++) {
+                    if (!this.isRunning) return;
+                    await this.waitIfPaused();
+                    
+                    let minIndex = i;
+                    this.highlightBars([i], 'comparing');
+                    
+                    for (let j = i + 1; j < n; j++) {
+                        if (!this.isRunning) return;
+                        await this.waitIfPaused();
+                        
+                        this.comparisons++;
+                        this.updateStats();
+                        this.highlightBars([j], 'comparing');
+                        
+                        await this.delay(this.getSpeed());
+                        
+                        if (array[j] < array[minIndex]) {
+                            if (minIndex !== i) {
+                                this.removeHighlight([minIndex]);
+                            }
+                            minIndex = j;
+                        } else {
+                            this.removeHighlight([j]);
+                        }
+                    }
+                    
+                    if (minIndex !== i) {
+                        [array[i], array[minIndex]] = [array[minIndex], array[i]];
+                        this.swaps++;
+                        this.updateStats();
+                        this.highlightBars([i, minIndex], 'swapping');
+                        this.updateBars(array);
+                        
+                        await this.delay(this.getSpeed());
+                        this.removeHighlight([minIndex]);
+                    }
+                    
+                    this.removeHighlight([i]);
+                    this.markSorted([i]);
+                }
+                this.markSorted([n - 1]);
+            }
+
+           
+            async linearSearch(array, target) {
+                this.resetStats();
+                
+                for (let i = 0; i < array.length; i++) {
+                    if (!this.isRunning) return -1;
+                    await this.waitIfPaused();
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([i], 'comparing');
+                    
+                    await this.delay(this.getSpeed() * 2);
+                    
+                    if (array[i] === target) {
+                        this.highlightBars([i], 'sorted');
+                        return i;
+                    }
+                    
+                    this.removeHighlight([i]);
+                }
+                
+                return -1;
+            }
+
+            async binarySearch(array, target) {
+                this.resetStats();
+                
+                const sortedArray = [...array].sort((a, b) => a - b);
+                this.updateBars(sortedArray);
+                
+                let left = 0;
+                let right = sortedArray.length - 1;
+                
+                while (left <= right) {
+                    if (!this.isRunning) return -1;
+                    await this.waitIfPaused();
+                    
+                    const mid = Math.floor((left + right) / 2);
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([mid], 'comparing');
+                    this.highlightBars([left, right], 'swapping');
+                    
+                    await this.delay(this.getSpeed() * 2);
+                    
+                    if (sortedArray[mid] === target) {
+                        this.highlightBars([mid], 'sorted');
+                        this.removeHighlight([left, right]);
+                        return mid;
+                    } else if (sortedArray[mid] < target) {
+                        left = mid + 1;
+                    } else {
+                        right = mid - 1;
+                    }
+                    
+                    this.removeHighlight([mid, left, right]);
+                }
+                
+                return -1;
+            }
+
+            async jumpSearch(array, target) {
+                this.resetStats();
+                const sortedArray = [...array].sort((a, b) => a - b);
+                this.updateBars(sortedArray);
+                
+                const n = sortedArray.length;
+                const step = Math.floor(Math.sqrt(n));
+                let prev = 0;
+                
+               
+                while (sortedArray[Math.min(step, n) - 1] < target) {
+                    if (!this.isRunning) return -1;
+                    await this.waitIfPaused();
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([Math.min(step, n) - 1], 'comparing');
+                    
+                    await this.delay(this.getSpeed() * 2);
+                    this.removeHighlight([Math.min(step, n) - 1]);
+                    
+                    prev = step;
+                    step += Math.floor(Math.sqrt(n));
+                    if (prev >= n) return -1;
+                }
+                
+                
+                while (sortedArray[prev] < target) {
+                    if (!this.isRunning) return -1;
+                    await this.waitIfPaused();
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([prev], 'comparing');
+                    
+                    await this.delay(this.getSpeed() * 2);
+                    
+                    prev++;
+                    if (prev === Math.min(step, n)) {
+                        this.removeHighlight([prev - 1]);
+                        return -1;
+                    }
+                    this.removeHighlight([prev - 1]);
+                }
+                
+                if (sortedArray[prev] === target) {
+                    this.highlightBars([prev], 'sorted');
+                    return prev;
+                }
+                
+                return -1;
+            }
+
+            async interpolationSearch(array, target) {
+                this.resetStats();
+                const sortedArray = [...array].sort((a, b) => a - b);
+                this.updateBars(sortedArray);
+                
+                let low = 0;
+                let high = sortedArray.length - 1;
+                
+                while (low <= high && target >= sortedArray[low] && target <= sortedArray[high]) {
+                    if (!this.isRunning) return -1;
+                    await this.waitIfPaused();
+                    
+                    if (low === high) {
+                        this.comparisons++;
+                        this.updateStats();
+                        this.highlightBars([low], 'comparing');
+                        
+                        await this.delay(this.getSpeed() * 2);
+                        
+                        if (sortedArray[low] === target) {
+                            this.highlightBars([low], 'sorted');
+                            return low;
+                        }
+                        return -1;
+                    }
+                    
+                    const pos = low + Math.floor(
+                        ((target - sortedArray[low]) / (sortedArray[high] - sortedArray[low])) * (high - low)
+                    );
+                    
+                    this.comparisons++;
+                    this.updateStats();
+                    this.highlightBars([pos], 'comparing');
+                    this.highlightBars([low, high], 'swapping');
+                    
+                    await this.delay(this.getSpeed() * 2);
+                    
+                    if (sortedArray[pos] === target) {
+                        this.highlightBars([pos], 'sorted');
+                        this.removeHighlight([low, high]);
+                        return pos;
+                    }
+                    
+                    if (sortedArray[pos] < target) {
+                        low = pos + 1;
+                    } else {
+                        high = pos - 1;
+                    }
+                    
+                    this.removeHighlight([pos, low, high]);
+                }
+                
+                return -1;
+            }
+
+            
+            initializePathfindingGrid() {
+                const rows = 20;
+                const cols = 30;
+                const gridElement = document.getElementById('pathfinding-grid');
+                
+                gridElement.innerHTML = '';
+                gridElement.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                gridElement.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                
+                this.pathfindingGrid = {
+                    rows,
+                    cols,
+                    grid: [],
+                    start: { row: 1, col: 1 },
+                    end: { row: rows - 2, col: cols - 2 }
+                };
+                
+              
+                for (let i = 0; i < rows; i++) {
+                    this.pathfindingGrid.grid[i] = [];
+                    for (let j = 0; j < cols; j++) {
+                        this.pathfindingGrid.grid[i][j] = {
+                            row: i,
+                            col: j,
+                            isWall: false,
+                            isVisited: false,
+                            distance: Infinity,
+                            previousNode: null
+                        };
+                    }
+                }
+                
+              
+                for (let i = 0; i < rows * cols; i++) {
+                    const cell = document.createElement('div');
+                    const row = Math.floor(i / cols);
+                    const col = i % cols;
+                    
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                 
+                    if (row === this.pathfindingGrid.start.row && col === this.pathfindingGrid.start.col) {
+                        cell.classList.add('start');
+                    } else if (row === this.pathfindingGrid.end.row && col === this.pathfindingGrid.end.col) {
+                        cell.classList.add('end');
+                    }
+                    
+                  
+                    cell.addEventListener('click', () => {
+                        if (!cell.classList.contains('start') && !cell.classList.contains('end')) {
+                            cell.classList.toggle('wall');
+                            this.pathfindingGrid.grid[row][col].isWall = cell.classList.contains('wall');
+                        }
+                    });
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+
+            async startPathfinding() {
+                if (this.isRunning || !this.pathfindingGrid) return;
+                
+                this.isRunning = true;
+                this.updateButtonStates();
+                this.clearPathfindingVisualization();
+                
+                const algorithm = document.getElementById('pathfind-algorithm').value;
+                
+                try {
+                    let path = [];
+                    switch (algorithm) {
+                        case 'astar':
+                            path = await this.aStar();
+                            break;
+                        case 'dijkstra':
+                            path = await this.dijkstra();
+                            break;
+                        case 'bfs':
+                            path = await this.bfs();
+                            break;
+                        case 'dfs':
+                            path = await this.dfs();
+                            break;
+                    }
+                    
+                    if (path.length > 0) {
+                        await this.animatePath(path);
+                        this.showMessage('Path found!', 'success');
+                    } else {
+                        this.showMessage('No path found!', 'warning');
+                    }
+                } catch (error) {
+                    console.error('Pathfinding error:', error);
+                    this.showMessage('Error during pathfinding', 'error');
+                }
+                
+                this.isRunning = false;
+                this.updateButtonStates();
+            }
+
+            clearPathfindingGrid() {
+                if (!this.pathfindingGrid) return;
+                
+                document.querySelectorAll('.grid-cell').forEach(cell => {
+                    if (!cell.classList.contains('start') && !cell.classList.contains('end')) {
+                        cell.className = 'grid-cell';
+                        const row = parseInt(cell.dataset.row);
+                        const col = parseInt(cell.dataset.col);
+                        this.pathfindingGrid.grid[row][col] = {
+                            row,
+                            col,
+                            isWall: false,
+                            isVisited: false,
+                            distance: Infinity,
+                            previousNode: null
+                        };
+                    }
+                });
+            }
+
+            clearPathfindingVisualization() {
+                if (!this.pathfindingGrid) return;
+                
+                document.querySelectorAll('.grid-cell').forEach(cell => {
+                    cell.classList.remove('visited', 'path');
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    if (!cell.classList.contains('wall')) {
+                        this.pathfindingGrid.grid[row][col].isVisited = false;
+                        this.pathfindingGrid.grid[row][col].distance = Infinity;
+                        this.pathfindingGrid.grid[row][col].previousNode = null;
+                    }
+                });
+            }
+
+            async dijkstra() {
+                const { grid, start, end } = this.pathfindingGrid;
+                const visitedNodesInOrder = [];
+                const unvisitedNodes = [];
+                
+              
+                for (let row of grid) {
+                    for (let node of row) {
+                        unvisitedNodes.push(node);
+                    }
+                }
+                
+                grid[start.row][start.col].distance = 0;
+                
+                while (unvisitedNodes.length) {
+                    if (!this.isRunning) break;
+                    await this.waitIfPaused();
+                    
+                   
+                    unvisitedNodes.sort((a, b) => a.distance - b.distance);
+                    const closestNode = unvisitedNodes.shift();
+                    
+                    if (closestNode.isWall) continue;
+                    if (closestNode.distance === Infinity) break;
+                    
+                    closestNode.isVisited = true;
+                    visitedNodesInOrder.push(closestNode);
+                    
+               
+                    if (!(closestNode.row === start.row && closestNode.col === start.col) &&
+                        !(closestNode.row === end.row && closestNode.col === end.col)) {
+                        const cell = document.querySelector(`[data-row="${closestNode.row}"][data-col="${closestNode.col}"]`);
+                        if (cell) cell.classList.add('visited');
+                    }
+                    
+                    if (closestNode.row === end.row && closestNode.col === end.col) {
+                        return this.getShortestPath(grid[end.row][end.col]);
+                    }
+                    
+                    this.updateUnvisitedNeighbors(closestNode, grid);
+                    await this.delay(20);
+                }
+                
+                return [];
+            }
+
+            async aStar() {
+                const { grid, start, end } = this.pathfindingGrid;
+                const openSet = [grid[start.row][start.col]];
+                const closedSet = [];
+                
+                grid[start.row][start.col].distance = 0;
+                grid[start.row][start.col].heuristic = this.manhattanDistance(start, end);
+                
+                while (openSet.length > 0) {
+                    if (!this.isRunning) break;
+                    await this.waitIfPaused();
+                    
+              
+                    let current = openSet[0];
+                    for (let node of openSet) {
+                        if ((node.distance + node.heuristic) < (current.distance + current.heuristic)) {
+                            current = node;
+                        }
+                    }
+                    
+                  
+                    openSet.splice(openSet.indexOf(current), 1);
+                    closedSet.push(current);
+                    current.isVisited = true;
+                    
+                
+                    if (!(current.row === start.row && current.col === start.col) &&
+                        !(current.row === end.row && current.col === end.col)) {
+                        const cell = document.querySelector(`[data-row="${current.row}"][data-col="${current.col}"]`);
+                        if (cell) cell.classList.add('visited');
+                    }
+                    
+                    if (current.row === end.row && current.col === end.col) {
+                        return this.getShortestPath(current);
+                    }
+                    
+                    const neighbors = this.getNeighbors(current, grid);
+                    
+                    for (let neighbor of neighbors) {
+                        if (neighbor.isWall || closedSet.includes(neighbor)) continue;
+                        
+                        const tentativeDistance = current.distance + 1;
+                        
+                        if (!openSet.includes(neighbor)) {
+                            openSet.push(neighbor);
+                        } else if (tentativeDistance >= neighbor.distance) {
+                            continue;
+                        }
+                        
+                        neighbor.previousNode = current;
+                        neighbor.distance = tentativeDistance;
+                        neighbor.heuristic = this.manhattanDistance(
+                            { row: neighbor.row, col: neighbor.col },
+                            end
+                        );
+                    }
+                    
+                    await this.delay(20);
+                }
+                
+                return [];
+            }
+
+            async bfs() {
+                const { grid, start, end } = this.pathfindingGrid;
+                const queue = [grid[start.row][start.col]];
+                const visitedNodes = [];
+                
+                grid[start.row][start.col].isVisited = true;
+                
+                while (queue.length > 0) {
+                    if (!this.isRunning) break;
+                    await this.waitIfPaused();
+                    
+                    const current = queue.shift();
+                    visitedNodes.push(current);
+                   
+                    if (!(current.row === start.row && current.col === start.col) &&
+                        !(current.row === end.row && current.col === end.col)) {
+                        const cell = document.querySelector(`[data-row="${current.row}"][data-col="${current.col}"]`);
+                        if (cell) cell.classList.add('visited');
+                    }
+                    
+                    if (current.row === end.row && current.col === end.col) {
+                        return this.getShortestPath(current);
+                    }
+                    
+                    const neighbors = this.getNeighbors(current, grid);
+                    for (let neighbor of neighbors) {
+                        if (!neighbor.isVisited && !neighbor.isWall) {
+                            neighbor.isVisited = true;
+                            neighbor.previousNode = current;
+                            queue.push(neighbor);
+                        }
+                    }
+                    
+                    await this.delay(20);
+                }
+                
+                return [];
+            }
+
+            async dfs() {
+                const { grid, start, end } = this.pathfindingGrid;
+                const stack = [grid[start.row][start.col]];
+                const visitedNodes = [];
+                
+                while (stack.length > 0) {
+                    if (!this.isRunning) break;
+                    await this.waitIfPaused();
+                    
+                    const current = stack.pop();
+                    
+                    if (current.isVisited) continue;
+                    
+                    current.isVisited = true;
+                    visitedNodes.push(current);
+                    
+                  
+                    if (!(current.row === start.row && current.col === start.col) &&
+                        !(current.row === end.row && current.col === end.col)) {
+                        const cell = document.querySelector(`[data-row="${current.row}"][data-col="${current.col}"]`);
+                        if (cell) cell.classList.add('visited');
+                    }
+                    
+                    if (current.row === end.row && current.col === end.col) {
+                        return this.getShortestPath(current);
+                    }
+                    
+                    const neighbors = this.getNeighbors(current, grid);
+                    for (let neighbor of neighbors) {
+                        if (!neighbor.isVisited && !neighbor.isWall) {
+                            neighbor.previousNode = current;
+                            stack.push(neighbor);
+                        }
+                    }
+                    
+                    await this.delay(50);
+                }
+                
+                return [];
+            }
+
+            getNeighbors(node, grid) {
+                const neighbors = [];
+                const { row, col } = node;
+                const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]]; // up, down, left, right
+                
+                for (let [dRow, dCol] of directions) {
+                    const newRow = row + dRow;
+                    const newCol = col + dCol;
+                    
+                    if (newRow >= 0 && newRow < grid.length &&
+                        newCol >= 0 && newCol < grid[0].length) {
+                        neighbors.push(grid[newRow][newCol]);
+                    }
+                }
+                
+                return neighbors;
+            }
+
+            updateUnvisitedNeighbors(node, grid) {
+                const neighbors = this.getNeighbors(node, grid);
+                for (let neighbor of neighbors) {
+                    if (!neighbor.isWall) {
+                        const newDistance = node.distance + 1;
+                        if (newDistance < neighbor.distance) {
+                            neighbor.distance = newDistance;
+                            neighbor.previousNode = node;
+                        }
+                    }
+                }
+            }
+
+            getShortestPath(finishNode) {
+                const nodesInShortestPathOrder = [];
+                let currentNode = finishNode;
+                while (currentNode !== null) {
+                    nodesInShortestPathOrder.unshift(currentNode);
+                    currentNode = currentNode.previousNode;
+                }
+                return nodesInShortestPathOrder;
+            }
+
+            async animatePath(path) {
+                for (let i = 0; i < path.length; i++) {
+                    if (!this.isRunning) break;
+                    
+                    const node = path[i];
+                    if (!(node.row === this.pathfindingGrid.start.row && node.col === this.pathfindingGrid.start.col) &&
+                        !(node.row === this.pathfindingGrid.end.row && node.col === this.pathfindingGrid.end.col)) {
+                        const cell = document.querySelector(`[data-row="${node.row}"][data-col="${node.col}"]`);
+                        if (cell) cell.classList.add('path');
+                    }
+                    
+                    await this.delay(50);
+                }
+            }
+
+            manhattanDistance(pos1, pos2) {
+                return Math.abs(pos1.row - pos2.row) + Math.abs(pos1.col - pos2.col);
+            }
+
+        
+            initializeGraphCanvas() {
+                const canvas = document.getElementById('graph-canvas');
+                const ctx = canvas.getContext('2d');
+                
+               
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+               
+                const nodes = [
+                    { id: 0, x: 100, y: 100, label: 'A', color: '#00f5ff' },
+                    { id: 1, x: 300, y: 100, label: 'B', color: '#00f5ff' },
+                    { id: 2, x: 500, y: 100, label: 'C', color: '#00f5ff' },
+                    { id: 3, x: 200, y: 300, label: 'D', color: '#00f5ff' },
+                    { id: 4, x: 400, y: 300, label: 'E', color: '#00f5ff' }
+                ];
+                
+                const edges = [
+                    { from: 0, to: 1, weight: 4 },
+                    { from: 0, to: 3, weight: 2 },
+                    { from: 1, to: 2, weight: 3 },
+                    { from: 1, to: 4, weight: 1 },
+                    { from: 2, to: 4, weight: 5 },
+                    { from: 3, to: 4, weight: 2 }
+                ];
+                
+                this.drawGraph(ctx, nodes, edges);
+            }
+
+            drawGraph(ctx, nodes, edges) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                
+             
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                edges.forEach(edge => {
+                    const from = nodes[edge.from];
+                    const to = nodes[edge.to];
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(from.x, from.y);
+                    ctx.lineTo(to.x, to.y);
+                    ctx.stroke();
+                    
+                   
+                    const midX = (from.x + to.x) / 2;
+                    const midY = (from.y + to.y) / 2;
+                    ctx.fillStyle = '#ffd700';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(edge.weight.toString(), midX, midY);
+                });
+             
+              
+                nodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                    ctx.fillStyle = node.color || '#00f5ff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    
+                 
+                    ctx.fillStyle = '#000000';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(node.label, node.x, node.y + 6);
+                });
+            }
+
+        
+            updateBars(newArray) {
+                this.array = [...newArray];
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                const maxValue = Math.max(...this.array);
+
+                bars.forEach((bar, index) => {
+                    const value = newArray[index];
+                    bar.style.height = `${(value / maxValue) * 350}px`;
+                    bar.dataset.value = value;
+                    bar.title = `Value: ${value}`;
+                });
+            }
+
+            highlightBars(indices, type) {
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                indices.forEach(index => {
+                    if (bars[index]) {
+                        bars[index].classList.add(type);
+                    }
+                });
+            }
+
+            removeHighlight(indices) {
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                indices.forEach(index => {
+                    if (bars[index]) {
+                        bars[index].classList.remove('comparing', 'swapping');
+                    }
+                });
+            }
+
+            markSorted(indices) {
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                indices.forEach(index => {
+                    if (bars[index]) {
+                        bars[index].classList.add('sorted');
+                        bars[index].classList.remove('comparing', 'swapping');
+                    }
+                });
+            }
+
+            markAllSorted() {
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                bars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        bar.classList.add('sorted');
+                        bar.classList.remove('comparing', 'swapping');
+                    }, index * 50);
+                });
+            }
+
+            updateStats() {
+                this.comparisonsElement.textContent = this.comparisons;
+                this.swapsElement.textContent = this.swaps;
+            }
+
+            resetStats() {
+                this.comparisons = 0;
+                this.swaps = 0;
+                this.updateStats();
+            }
+
+            updateAlgorithmInfo(algorithm) {
+                const complexities = {
+                  
+                    bubble: {
+                        time: 'O(n²)',
+                        space: 'O(1)',
+                        description: 'Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order.'
+                    },
+                    quick: {
+                        time: 'O(n log n)',
+                        space: 'O(log n)',
+                        description: 'Quick Sort is a divide-and-conquer algorithm that picks an element as a pivot and partitions the array around the pivot.'
+                    },
+                    merge: {
+                        time: 'O(n log n)',
+                        space: 'O(n)',
+                        description: 'Merge Sort is a divide-and-conquer algorithm that divides the array into two halves, sorts them separately, and then merges them.'
+                    },
+                    heap: {
+                        time: 'O(n log n)',
+                        space: 'O(1)',
+                        description: 'Heap Sort is a comparison-based sorting algorithm that uses a binary heap data structure.'
+                    },
+                    insertion: {
+                        time: 'O(n²)',
+                        space: 'O(1)',
+                        description: 'Insertion Sort builds the final sorted array one item at a time by inserting each element into its correct position.'
+                    },
+                    selection: {
+                        time: 'O(n²)',
+                        space: 'O(1)',
+                        description: 'Selection Sort finds the minimum element and places it at the beginning, then repeats for the remaining elements.'
+                    },
+                    // Searching algorithms
+                    linear: {
+                        time: 'O(n)',
+                        space: 'O(1)',
+                        description: 'Linear Search sequentially checks each element of the list until a match is found or the whole list has been searched.'
+                    },
+                    binary: {
+                        time: 'O(log n)',
+                        space: 'O(1)',
+                        description: 'Binary Search finds the position of a target value within a sorted array by repeatedly dividing the search interval in half.'
+                    },
+                    jump: {
+                        time: 'O(√n)',
+                        space: 'O(1)',
+                        description: 'Jump Search finds the position of a target value by jumping ahead by fixed steps then performing linear search.'
+                    },
+                    interpolation: {
+                        time: 'O(log log n)',
+                        space: 'O(1)',
+                        description: 'Interpolation Search is an improvement over Binary Search for uniformly distributed data.'
+                    }
+                };
+
+                const info = complexities[algorithm] || complexities.bubble;
+                this.timeComplexityElement.textContent = info.time;
+                this.spaceComplexityElement.textContent = info.space;
+                this.descriptionElement.textContent = info.description;
+            }
+
+            startTimer() {
+                this.startTime = Date.now();
+                this.timerInterval = setInterval(() => {
+                    if (!this.isPaused) {
+                        const elapsed = (Date.now() - this.startTime) / 1000;
+                        this.timeElement.textContent = elapsed.toFixed(2) + 's';
+                    }
+                }, 10);
+            }
+
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+
+            updateButtonStates() {
+                const startBtn = document.getElementById('start-btn');
+                const pauseBtn = document.getElementById('pause-btn');
+                const resetBtn = document.getElementById('reset-btn');
+                const generateBtn = document.getElementById('generate-btn');
+
+                startBtn.disabled = this.isRunning;
+                pauseBtn.disabled = !this.isRunning;
+                resetBtn.disabled = false;
+                generateBtn.disabled = this.isRunning;
+
+                pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+            }
+
+            showComplete() {
+
+                const bars = this.visualizationArea.querySelectorAll('.bar');
+                bars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        this.createParticleEffect(
+                            bar.offsetLeft + bar.offsetWidth / 2,
+                            bar.offsetTop,
+                            '#00ff88'
+                        );
+                    }, index * 20);
+                });
+
+                setTimeout(() => {
+                    this.showMessage('Algorithm Complete!', 'success');
+                }, bars.length * 20);
+            }
+
+            showMessage(text, type = 'info') {
+                const message = document.createElement('div');
+                message.className = `message ${type}`;
+                message.textContent = text;
+                message.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: var(--glass-bg);
+                    border: 1px solid var(--glass-border);
+                    border-radius: 15px;
+                    padding: 20px 40px;
+                    color: var(--text-primary);
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                    backdrop-filter: blur(20px);
+                    z-index: 1000;
+                    animation: messageSlide 0.5s ease-out;
+                `;
+
+                document.body.appendChild(message);
+
+                setTimeout(() => {
+                    message.style.animation = 'messageSlide 0.5s ease-out reverse';
+                    setTimeout(() => message.remove(), 500);
+                }, 2000);
+            }
+
+            createParticleEffect(x, y, color = '#00f5ff') {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.backgroundColor = color;
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                particle.style.boxShadow = `0 0 10px ${color}`;
+                
+                document.body.appendChild(particle);
+                
+                const animation = particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000,
+                    easing: 'ease-out'
+                });
+                
+                animation.onfinish = () => particle.remove();
+            }
+
+            getSpeed() {
+                return Math.max(10, 200 - (this.speed * 20));
+            }
+
+            async delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async waitIfPaused() {
+                while (this.isPaused && this.isRunning) {
+                    await this.delay(100);
+                }
+            }
+
+            hideLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }, 1000);
+            }
+        }
+
+       
+        document.addEventListener('DOMContentLoaded', () => {
+            new AlgorithmVisualizer();
+        });
+
+       
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('graph-canvas');
+            if (canvas && !canvas.classList.contains('hidden')) {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+            }
+        });
+    </script>
 </body>
 </html>
