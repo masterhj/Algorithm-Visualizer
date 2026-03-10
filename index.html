@@ -69,6 +69,7 @@
             align-items: center;
             z-index: 1000;
             transition: opacity 0.5s ease;
+            opacity: 1;
         }
 
         .loader {
@@ -229,6 +230,18 @@
             border-radius: 10px;
             backdrop-filter: blur(20px);
             transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .glass-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f5ff'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 24px;
+            padding-right: 36px;
         }
 
         .glass-select:focus,
@@ -240,19 +253,39 @@
 
         .glass-slider {
             -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
             height: 8px;
             background: var(--glass-bg);
             border-radius: 5px;
+            cursor: pointer;
+            outline: none;
         }
 
         .glass-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
+            appearance: none;
             width: 20px;
             height: 20px;
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .glass-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        }
+
+        .glass-slider::-moz-range-track {
+            background: transparent;
+            border: none;
         }
 
         .control-buttons {
@@ -776,6 +809,77 @@
             </div>
         </div>
 
+        <!-- Searching Section (hidden by default) -->
+        <div id="searching-section" class="searching-container hidden">
+            <div class="control-panel">
+                <div class="control-group">
+                    <label for="search-algorithm-select">Algorithm:</label>
+                    <select id="search-algorithm-select" class="glass-select">
+                        <option value="linear">Linear Search</option>
+                        <option value="binary">Binary Search</option>
+                        <option value="jump">Jump Search</option>
+                        <option value="interpolation">Interpolation Search</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="search-array-size">Array Size:</label>
+                    <input type="range" id="search-array-size" min="10" max="100" value="50" class="glass-slider">
+                    <span id="search-size-value">50</span>
+                </div>
+
+                <div class="control-group">
+                    <label for="search-speed">Speed:</label>
+                    <input type="range" id="search-speed" min="1" max="10" value="5" class="glass-slider">
+                    <span id="search-speed-value">5</span>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="search-generate-btn" class="glass-btn primary">Generate Array</button>
+                    <button id="search-start-btn" class="glass-btn success">Start</button>
+                    <button id="search-pause-btn" class="glass-btn warning" disabled="">Pause</button>
+                    <button id="search-reset-btn" class="glass-btn danger">Reset</button>
+                </div>
+            </div>
+
+            <div class="visualization-container">
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-label">Comparisons:</span>
+                        <span id="search-comparisons" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span id="search-time" class="stat-value">0.00s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Found:</span>
+                        <span id="search-found" class="stat-value">No</span>
+                    </div>
+                </div>
+
+                <div id="search-visualization-area" class="visualization-area"></div>
+
+                <div class="complexity-info">
+                    <div class="complexity-item">
+                        <span class="complexity-label">Time Complexity:</span>
+                        <span id="search-time-complexity" class="complexity-value">O(n)</span>
+                    </div>
+                    <div class="complexity-item">
+                        <span class="complexity-label">Space Complexity:</span>
+                        <span id="search-space-complexity" class="complexity-value">O(1)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="description-panel">
+                <h3>Algorithm Description</h3>
+                <p id="search-algorithm-description">
+                    Linear Search is a simple search algorithm that checks each element sequentially until the target is found.
+                </p>
+            </div>
+        </div>
+
       
         <div id="graph-section" class="hidden">
             <canvas id="graph-canvas" class="graph-canvas"></canvas>
@@ -792,10 +896,14 @@
  
     <div id="particle-background"></div>
 
+    <!-- API Client -->
+    <script src="js/api-client.js"></script>
+    
     <script>
         
         class AlgorithmVisualizer {
             constructor() {
+                console.log('🎯 AlgorithmVisualizer constructor called');
                 this.array = [];
                 this.isRunning = false;
                 this.isPaused = false;
@@ -812,10 +920,16 @@
             }
 
             init() {
+                console.log('🔧 Initializing AlgorithmVisualizer...');
                 this.initializeElements();
+                console.log('✅ Elements initialized');
                 this.setupEventListeners();
+                console.log('✅ Event listeners setup');
                 this.generateNewArray();
+                console.log('✅ New array generated');
                 this.hideLoading();
+                console.log('✅ Loading screen hidden');
+                console.log('🎉 AlgorithmVisualizer ready!');
             }
 
             initializeElements() {
@@ -831,61 +945,256 @@
                 this.sizeValueElement = document.getElementById('size-value');
                 this.speedValueElement = document.getElementById('speed-value');
                 this.algorithmSelect = document.getElementById('algorithm-select');
+                
+                // Verify all elements are found
+                console.log('✅ Elements initialized:', {
+                    visualization: !!this.visualizationArea,
+                    sizeSlider: !!this.sizeSlider,
+                    speedSlider: !!this.speedSlider,
+                    algorithmSelect: !!this.algorithmSelect
+                });
             }
 
             setupEventListeners() {
-                
-                document.querySelectorAll('.nav-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        this.switchMode(e.target.dataset.algorithm);
-                    });
-                });
-
-               
-                this.sizeSlider.addEventListener('input', (e) => {
-                    this.sizeValueElement.textContent = e.target.value;
-                    if (!this.isRunning) {
-                        this.generateNewArray();
+                try {
+                    // Check if elements exist before attaching listeners
+                    if (!this.sizeSlider || !this.speedSlider || !this.algorithmSelect) {
+                        console.error('❌ Critical elements not found!', {
+                            sizeSlider: !!this.sizeSlider,
+                            speedSlider: !!this.speedSlider,
+                            algorithmSelect: !!this.algorithmSelect
+                        });
+                        console.error('Element references:', {
+                            sizeSlider: this.sizeSlider,
+                            speedSlider: this.speedSlider,
+                            algorithmSelect: this.algorithmSelect
+                        });
+                        return;
                     }
-                });
 
-                
-                this.speedSlider.addEventListener('input', (e) => {
-                    this.speed = parseInt(e.target.value);
-                    this.speedValueElement.textContent = e.target.value;
-                });
+                    console.log('🔌 Attaching event listeners to controls...');
+                    console.log('Elements found:', {
+                        sizeSlider: !!this.sizeSlider,
+                        speedSlider: !!this.speedSlider,
+                        algorithmSelect: !!this.algorithmSelect
+                    });
 
-                
-                this.algorithmSelect.addEventListener('change', (e) => {
-                    this.currentAlgorithm = e.target.value;
-                    this.updateAlgorithmInfo(e.target.value);
-                });
+                    // Navigation buttons
+                    document.querySelectorAll('.nav-btn').forEach((btn, idx) => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('🧭 Nav button clicked:', e.target.dataset.algorithm);
+                            this.switchMode(e.target.dataset.algorithm);
+                        });
+                    });
+                    console.log('✅ Nav buttons listeners attached');
 
-               
-                document.getElementById('generate-btn').addEventListener('click', () => {
-                    if (!this.isRunning) this.generateNewArray();
-                });
+                    // Size slider - listen for input AND change events
+                    this.sizeSlider.addEventListener('input', (e) => {
+                        console.log('📊 Array size input event:', e.target.value);
+                        this.sizeValueElement.textContent = e.target.value;
+                        if (!this.isRunning) {
+                            this.generateNewArray();
+                        }
+                    });
+                    console.log('✅ Size slider input listener attached');
 
-                document.getElementById('start-btn').addEventListener('click', () => {
-                    this.startVisualization();
-                });
+                    this.sizeSlider.addEventListener('change', (e) => {
+                        console.log('📊 Array size change event:', e.target.value);
+                        this.sizeValueElement.textContent = e.target.value;
+                        if (!this.isRunning) {
+                            this.generateNewArray();
+                        }
+                    });
+                    console.log('✅ Size slider change listener attached');
 
-                document.getElementById('pause-btn').addEventListener('click', () => {
-                    this.pauseVisualization();
-                });
+                    // Speed slider
+                    this.speedSlider.addEventListener('input', (e) => {
+                        console.log('⚡ Speed input event:', e.target.value);
+                        this.speed = parseInt(e.target.value);
+                        this.speedValueElement.textContent = e.target.value;
+                    });
+                    console.log('✅ Speed slider input listener attached');
 
-                document.getElementById('reset-btn').addEventListener('click', () => {
-                    this.resetVisualization();
-                });
+                    this.speedSlider.addEventListener('change', (e) => {
+                        console.log('⚡ Speed change event:', e.target.value);
+                        this.speed = parseInt(e.target.value);
+                        this.speedValueElement.textContent = e.target.value;
+                    });
+                    console.log('✅ Speed slider change listener attached');
 
-                
-                document.getElementById('pathfind-start').addEventListener('click', () => {
-                    this.startPathfinding();
-                });
+                    // Algorithm select dropdown
+                    this.algorithmSelect.addEventListener('change', (e) => {
+                        console.log('🎯 Algorithm changed to:', e.target.value);
+                        this.currentAlgorithm = e.target.value;
+                        console.log('Updated currentAlgorithm:', this.currentAlgorithm);
+                        this.updateAlgorithmInfo(e.target.value);
+                    });
+                    console.log('✅ Algorithm select listener attached');
 
-                document.getElementById('pathfind-clear').addEventListener('click', () => {
-                    this.clearPathfindingGrid();
-                });
+                    this.algorithmSelect.addEventListener('click', (e) => {
+                        console.log('🎯 Algorithm dropdown clicked');
+                    });
+
+                    this.algorithmSelect.addEventListener('focus', (e) => {
+                        console.log('🎯 Algorithm dropdown focused');
+                    });
+                    console.log('✅ Algorithm select click/focus listeners attached');
+
+                // Generate button
+                const generateBtn = document.getElementById('generate-btn');
+                if (generateBtn) {
+                    generateBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔄 Generate new array clicked');
+                        if (!this.isRunning) this.generateNewArray();
+                    });
+                }
+
+                // Start button
+                const startBtn = document.getElementById('start-btn');
+                if (startBtn) {
+                    startBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('▶️ Start visualization clicked');
+                        this.startVisualization();
+                    });
+                }
+
+                // Pause button
+                const pauseBtn = document.getElementById('pause-btn');
+                if (pauseBtn) {
+                    pauseBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('⏸️ Pause clicked');
+                        this.pauseVisualization();
+                    });
+                }
+
+                // Reset button
+                const resetBtn = document.getElementById('reset-btn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔁 Reset clicked');
+                        this.resetVisualization();
+                    });
+                }
+
+                // Pathfinding buttons
+                const pathfindStart = document.getElementById('pathfind-start');
+                if (pathfindStart) {
+                    pathfindStart.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.startPathfinding();
+                    });
+                }
+
+                const pathfindClear = document.getElementById('pathfind-clear');
+                if (pathfindClear) {
+                    pathfindClear.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.clearPathfindingGrid();
+                    });
+                }
+
+                // Searching section buttons
+                const searchGenerateBtn = document.getElementById('search-generate-btn');
+                if (searchGenerateBtn) {
+                    searchGenerateBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔄 Search Generate clicked');
+                        this.generateSearchingArray();
+                    });
+                }
+
+                const searchStartBtn = document.getElementById('search-start-btn');
+                if (searchStartBtn) {
+                    searchStartBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('▶️ Search Start clicked');
+                        this.startSearching();
+                    });
+                }
+
+                const searchPauseBtn = document.getElementById('search-pause-btn');
+                if (searchPauseBtn) {
+                    searchPauseBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('⏸️ Search Pause clicked');
+                        this.pauseVisualization();
+                    });
+                }
+
+                const searchResetBtn = document.getElementById('search-reset-btn');
+                if (searchResetBtn) {
+                    searchResetBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔁 Search Reset clicked');
+                        this.resetVisualization();
+                    });
+                }
+
+                // Searching algorithm select
+                const searchAlgoSelect = document.getElementById('search-algorithm-select');
+                if (searchAlgoSelect) {
+                    searchAlgoSelect.addEventListener('change', (e) => {
+                        console.log('🔍 Search Algorithm changed to:', e.target.value);
+                        this.currentAlgorithm = e.target.value;
+                        this.updateSearchingAlgorithmInfo(e.target.value);
+                    });
+                }
+
+                // Searching array size slider
+                const searchSizeSlider = document.getElementById('search-array-size');
+                if (searchSizeSlider) {
+                    searchSizeSlider.addEventListener('input', (e) => {
+                        console.log('📊 Search Array size changed:', e.target.value);
+                        document.getElementById('search-size-value').textContent = e.target.value;
+                        if (!this.isRunning) {
+                            this.generateSearchingArray();
+                        }
+                    });
+
+                    searchSizeSlider.addEventListener('change', (e) => {
+                        console.log('📊 Search Array size finalized:', e.target.value);
+                        if (!this.isRunning) {
+                            this.generateSearchingArray();
+                        }
+                    });
+                }
+
+                // Searching speed slider
+                const searchSpeedSlider = document.getElementById('search-speed');
+                if (searchSpeedSlider) {
+                    searchSpeedSlider.addEventListener('input', (e) => {
+                        console.log('⚡ Search Speed changed:', e.target.value);
+                        this.speed = parseInt(e.target.value);
+                        document.getElementById('search-speed-value').textContent = e.target.value;
+                    });
+
+                    searchSpeedSlider.addEventListener('change', (e) => {
+                        console.log('⚡ Search Speed finalized:', e.target.value);
+                        this.speed = parseInt(e.target.value);
+                    });
+                }
+
+                console.log('✅ All event listeners attached successfully');
+                } catch (error) {
+                    console.error('❌ Error during setupEventListeners:', error);
+                    console.error('Error stack:', error.stack);
+                }
             }
 
             switchMode(mode) {
@@ -947,20 +1256,24 @@
             }
 
             showSearchingMode() {
-                document.querySelector('.visualization-container').classList.remove('hidden');
+                document.querySelector('.visualization-container').classList.add('hidden');
+                document.getElementById('searching-section').classList.remove('hidden');
                 document.getElementById('pathfinding-section').classList.add('hidden');
                 document.getElementById('graph-section').classList.add('hidden');
                 
-              
-                this.algorithmSelect.innerHTML = `
-                    <option value="linear">Linear Search</option>
-                    <option value="binary">Binary Search</option>
-                    <option value="jump">Jump Search</option>
-                    <option value="interpolation">Interpolation Search</option>
-                `;
+                const searchAlgoSelect = document.getElementById('search-algorithm-select');
+                if (searchAlgoSelect) {
+                    searchAlgoSelect.innerHTML = `
+                        <option value="linear">Linear Search</option>
+                        <option value="binary">Binary Search</option>
+                        <option value="jump">Jump Search</option>
+                        <option value="interpolation">Interpolation Search</option>
+                    `;
+                }
+                
                 this.currentAlgorithm = 'linear';
-                this.updateAlgorithmInfo('linear');
-                this.generateNewArray();
+                this.updateSearchingAlgorithmInfo('linear');
+                this.generateSearchingArray();
             }
 
             generateNewArray() {
@@ -968,6 +1281,70 @@
                 this.array = this.generateRandomArray(size, 10, 400);
                 this.renderBars();
                 this.resetStats();
+            }
+
+            generateSearchingArray() {
+                const size = parseInt(document.getElementById('search-array-size')?.value || 50);
+                this.array = this.generateRandomArray(size, 10, 400).sort((a, b) => a - b);
+                this.renderSearchingBars();
+                this.resetSearchingStats();
+            }
+
+            renderSearchingBars() {
+                const visualizationArea = document.getElementById('search-visualization-area');
+                if (!visualizationArea) return;
+                
+                visualizationArea.innerHTML = '';
+                const maxValue = Math.max(...this.array);
+                const containerWidth = visualizationArea.clientWidth;
+                const barWidth = Math.max(4, (containerWidth - (this.array.length * 2)) / this.array.length);
+
+                this.array.forEach((value, index) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = (value / maxValue * 350) + 'px';
+                    bar.style.width = barWidth + 'px';
+                    bar.setAttribute('data-value', value);
+                    bar.setAttribute('data-index', index);
+                    bar.title = `Value: ${value}`;
+                    visualizationArea.appendChild(bar);
+                });
+            }
+
+            resetSearchingStats() {
+                document.getElementById('search-comparisons').textContent = '0';
+                document.getElementById('search-time').textContent = '0.00s';
+                document.getElementById('search-found').textContent = 'No';
+            }
+
+            updateSearchingAlgorithmInfo(algorithm) {
+                const descriptions = {
+                    'linear': {
+                        desc: 'Linear Search checks each element sequentially until the target is found.',
+                        time: 'O(n)',
+                        space: 'O(1)'
+                    },
+                    'binary': {
+                        desc: 'Binary Search efficiently finds an element in a sorted array by dividing the search space in half.',
+                        time: 'O(log n)',
+                        space: 'O(1)'
+                    },
+                    'jump': {
+                        desc: 'Jump Search jumps ahead by a fixed interval to find the target element.',
+                        time: 'O(√n)',
+                        space: 'O(1)'
+                    },
+                    'interpolation': {
+                        desc: 'Interpolation Search uses interpolation to estimate the target position in a sorted array.',
+                        time: 'O(log log n)',
+                        space: 'O(1)'
+                    }
+                };
+
+                const info = descriptions[algorithm] || descriptions['linear'];
+                document.getElementById('search-algorithm-description').textContent = info.desc;
+                document.getElementById('search-time-complexity').textContent = info.time;
+                document.getElementById('search-space-complexity').textContent = info.space;
             }
 
             generateRandomArray(size, min, max) {
@@ -1016,6 +1393,10 @@
                 this.isRunning = false;
                 this.updateButtonStates();
                 this.stopTimer();
+            }
+
+            async startSearching() {
+                await this.startVisualization();
             }
 
             pauseVisualization() {
@@ -2006,7 +2387,12 @@
         
             updateBars(newArray) {
                 this.array = [...newArray];
-                const bars = this.visualizationArea.querySelectorAll('.bar');
+                let visualArea = this.visualizationArea;
+                if (this.currentMode === 'searching') {
+                    visualArea = document.getElementById('search-visualization-area');
+                }
+                
+                const bars = visualArea.querySelectorAll('.bar');
                 const maxValue = Math.max(...this.array);
 
                 bars.forEach((bar, index) => {
@@ -2018,7 +2404,12 @@
             }
 
             highlightBars(indices, type) {
-                const bars = this.visualizationArea.querySelectorAll('.bar');
+                let visualArea = this.visualizationArea;
+                if (this.currentMode === 'searching') {
+                    visualArea = document.getElementById('search-visualization-area');
+                }
+                
+                const bars = visualArea.querySelectorAll('.bar');
                 indices.forEach(index => {
                     if (bars[index]) {
                         bars[index].classList.add(type);
@@ -2027,7 +2418,12 @@
             }
 
             removeHighlight(indices) {
-                const bars = this.visualizationArea.querySelectorAll('.bar');
+                let visualArea = this.visualizationArea;
+                if (this.currentMode === 'searching') {
+                    visualArea = document.getElementById('search-visualization-area');
+                }
+                
+                const bars = visualArea.querySelectorAll('.bar');
                 indices.forEach(index => {
                     if (bars[index]) {
                         bars[index].classList.remove('comparing', 'swapping');
@@ -2036,7 +2432,12 @@
             }
 
             markSorted(indices) {
-                const bars = this.visualizationArea.querySelectorAll('.bar');
+                let visualArea = this.visualizationArea;
+                if (this.currentMode === 'searching') {
+                    visualArea = document.getElementById('search-visualization-area');
+                }
+                
+                const bars = visualArea.querySelectorAll('.bar');
                 indices.forEach(index => {
                     if (bars[index]) {
                         bars[index].classList.add('sorted');
@@ -2046,7 +2447,12 @@
             }
 
             markAllSorted() {
-                const bars = this.visualizationArea.querySelectorAll('.bar');
+                let visualArea = this.visualizationArea;
+                if (this.currentMode === 'searching') {
+                    visualArea = document.getElementById('search-visualization-area');
+                }
+                
+                const bars = visualArea.querySelectorAll('.bar');
                 bars.forEach((bar, index) => {
                     setTimeout(() => {
                         bar.classList.add('sorted');
@@ -2056,8 +2462,15 @@
             }
 
             updateStats() {
-                this.comparisonsElement.textContent = this.comparisons;
-                this.swapsElement.textContent = this.swaps;
+                if (this.currentMode === 'searching') {
+                    // Update searching stats
+                    const comparisonsEl = document.getElementById('search-comparisons');
+                    if (comparisonsEl) comparisonsEl.textContent = this.comparisons;
+                } else {
+                    // Update sorting stats
+                    this.comparisonsElement.textContent = this.comparisons;
+                    this.swapsElement.textContent = this.swaps;
+                }
             }
 
             resetStats() {
@@ -2146,17 +2559,30 @@
             }
 
             updateButtonStates() {
-                const startBtn = document.getElementById('start-btn');
-                const pauseBtn = document.getElementById('pause-btn');
-                const resetBtn = document.getElementById('reset-btn');
-                const generateBtn = document.getElementById('generate-btn');
+                if (this.currentMode === 'searching') {
+                    const searchStartBtn = document.getElementById('search-start-btn');
+                    const searchPauseBtn = document.getElementById('search-pause-btn');
+                    const searchResetBtn = document.getElementById('search-reset-btn');
+                    const searchGenerateBtn = document.getElementById('search-generate-btn');
 
-                startBtn.disabled = this.isRunning;
-                pauseBtn.disabled = !this.isRunning;
-                resetBtn.disabled = false;
-                generateBtn.disabled = this.isRunning;
+                    if (searchStartBtn) searchStartBtn.disabled = this.isRunning;
+                    if (searchPauseBtn) searchPauseBtn.disabled = !this.isRunning;
+                    if (searchResetBtn) searchResetBtn.disabled = false;
+                    if (searchGenerateBtn) searchGenerateBtn.disabled = this.isRunning;
+                    if (searchPauseBtn) searchPauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+                } else {
+                    const startBtn = document.getElementById('start-btn');
+                    const pauseBtn = document.getElementById('pause-btn');
+                    const resetBtn = document.getElementById('reset-btn');
+                    const generateBtn = document.getElementById('generate-btn');
 
-                pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+                    startBtn.disabled = this.isRunning;
+                    pauseBtn.disabled = !this.isRunning;
+                    resetBtn.disabled = false;
+                    generateBtn.disabled = this.isRunning;
+
+                    pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+                }
             }
 
             showComplete() {
@@ -2174,7 +2600,37 @@
 
                 setTimeout(() => {
                     this.showMessage('Algorithm Complete!', 'success');
+                    // Save to database
+                    this.saveVisualization();
                 }, bars.length * 20);
+            }
+
+            async saveVisualization() {
+                try {
+                    const executionTime = parseFloat(this.timeElement.textContent);
+                    
+                    if (this.currentMode === 'sorting') {
+                        await apiClient.saveSortingVisualization({
+                            algorithmName: this.currentAlgorithm,
+                            arraySize: parseInt(this.sizeSlider.value),
+                            comparisons: this.comparisons,
+                            swaps: this.swaps,
+                            executionTime: executionTime
+                        });
+                        console.log('Sorting visualization saved to database');
+                    } else if (this.currentMode === 'pathfinding') {
+                        await apiClient.savePathfindingResult({
+                            algorithmName: this.currentAlgorithm,
+                            gridSize: `${this.pathfindingGrid.rows}x${this.pathfindingGrid.cols}`,
+                            pathLength: 0,
+                            nodesExplored: 0,
+                            executionTime: executionTime
+                        });
+                        console.log('Pathfinding result saved to database');
+                    }
+                } catch (error) {
+                    console.error('Failed to save visualization:', error);
+                }
             }
 
             showMessage(text, type = 'info') {
@@ -2248,18 +2704,23 @@
 
             hideLoading() {
                 const loadingScreen = document.getElementById('loading-screen');
-                setTimeout(() => {
-                    loadingScreen.style.opacity = '0';
+                if (loadingScreen) {
+                    loadingScreen.style.pointerEvents = 'none';
                     setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }, 1000);
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                        }, 300);
+                    }, 800);
+                }
             }
         }
 
        
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 DOMContentLoaded fired - Creating AlgorithmVisualizer instance');
             new AlgorithmVisualizer();
+            console.log('📄 DOMContentLoaded complete');
         });
 
        
