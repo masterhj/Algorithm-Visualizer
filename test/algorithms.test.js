@@ -111,3 +111,14 @@ test('every route is a legal walk and the optimal ones agree', () => {
   }
 });
 
+test('a walled-off goal is reported rather than searched forever', () => {
+  const rows = 11, cols = 11, start = [5, 1], goal = [5, 9];
+  const walls = Array.from({ length: rows }, () => new Array(cols).fill(false));
+  for (let r = 0; r < rows; r++) walls[r][5] = true;
+
+  for (const algo of catalog.path) {
+    const steps = drain(algo.run(walls, start, goal));
+    assert.ok(steps.some(s => s.op === 'miss'), `${algo.id} did not report an unreachable goal`);
+  }
+});
+
