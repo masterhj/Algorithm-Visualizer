@@ -317,3 +317,59 @@ input[type='range']:disabled { opacity: 0.4; cursor: not-allowed; }
   background: var(--c);
 }
 
+/* ============================================================= stage ===== */
+
+.stage {
+  grid-area: stage;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  min-width: 0;
+  padding: var(--sp-5);
+}
+
+/* ----- readout strip ----- */
+
+.readout {
+  display: flex;
+  flex: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.metric {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.metric + .metric { border-left: 1px solid var(--line-faint); }
+
+.metric-k {
+  display: block;
+  font-size: var(--text-2xs);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-v {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--ink-bright);
+  letter-spacing: var(--track-tight);
+  white-space: nowrap;
+}
+
+.metric-v.is-idle { color: var(--ink-faint); }
+.metric-v.is-live { color: var(--accent); }
+.metric-v.is-good { color: var(--state-found); }
+.metric-v.is-bad  { color: var(--danger); }
+
