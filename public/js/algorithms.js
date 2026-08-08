@@ -66,6 +66,41 @@ const Algo = (function () {
     yield { op: 'settle' };
   }
 
+  function* quick(a) {
+    yield* qsort(a, 0, a.length - 1);
+    yield { op: 'settle' };
+  }
+
+  function* qsort(a, lo, hi) {
+    if (lo > hi) return;
+    if (lo === hi) { yield { op: 'lock', i: lo }; return; }
+    const p = yield* partition(a, lo, hi);
+    yield { op: 'lock', i: p };
+    yield* qsort(a, lo, p - 1);
+    yield* qsort(a, p + 1, hi);
+  }
+
+  function* partition(a, lo, hi) {
+    const pivot = a[hi];
+    yield { op: 'pivot', i: hi };
+    let i = lo - 1;
+    for (let j = lo; j < hi; j++) {
+      yield { op: 'cmp', a: j, b: hi };
+      if (a[j] < pivot) {
+        i++;
+        if (i !== j) {
+          swap(a, i, j);
+          yield { op: 'swap', a: i, b: j };
+        }
+      }
+    }
+    if (i + 1 !== hi) {
+      swap(a, i + 1, hi);
+      yield { op: 'swap', a: i + 1, b: hi };
+    }
+    return i + 1;
+  }
+
 
   return {};
 })();
