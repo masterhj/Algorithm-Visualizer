@@ -47,3 +47,26 @@ test('sorting never touches an index outside the array', () => {
   }
 });
 
+test('searching finds present values and reports absent ones', () => {
+  for (const algo of catalog.search) {
+    for (const n of [1, 2, 3, 9, 64, 101]) {
+      for (let trial = 0; trial < 30; trial++) {
+        const data = rand(n).sort(asc);
+        const present = trial % 2 === 0;
+        const target = present ? data[Math.floor(Math.random() * n)] : 999;
+        const steps = drain(algo.run(data.slice(), target));
+        const hit = steps.find(s => s.op === 'hit');
+        const miss = steps.some(s => s.op === 'miss');
+
+        if (present) {
+          assert.ok(hit, `${algo.id} missed a value that was present`);
+          assert.equal(data[hit.i], target, `${algo.id} pointed at the wrong slot`);
+          assert.ok(!miss, `${algo.id} reported both a hit and a miss`);
+        } else {
+          assert.ok(miss && !hit, `${algo.id} claimed to find an absent value`);
+        }
+      }
+    }
+  }
+});
+
