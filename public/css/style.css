@@ -488,3 +488,86 @@ input[type='range']:disabled { opacity: 0.4; cursor: not-allowed; }
 .rack.is-pickable .bar { cursor: pointer; }
 .rack.is-pickable .bar:hover { --c: var(--state-move); }
 
+/* ----- pathfinding grid ----- */
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  transform-style: preserve-3d;
+}
+
+.cell {
+  --c: var(--surface-overlay);
+  aspect-ratio: 1;
+  border-radius: var(--r-xs);
+  background: var(--c);
+  transition: background var(--t-base) var(--ease-out),
+              transform var(--t-base) var(--ease-out);
+}
+
+.cell.is-wall {
+  --c: var(--state-wall);
+  transform: translateZ(var(--lift-terrain));
+  box-shadow: var(--shadow-1);
+}
+
+.cell.is-frontier { --c: var(--state-compare); transform: translateZ(var(--lift-sm)); }
+.cell.is-visited  { --c: var(--state-visit); }
+
+.cell.is-path {
+  --c: var(--state-found);
+  transform: translateZ(var(--lift-active));
+  box-shadow: var(--shadow-1);
+}
+
+.cell.is-start { --c: var(--cool); transform: translateZ(var(--lift-active)); }
+.cell.is-goal  { --c: var(--accent-deep); transform: translateZ(var(--lift-active)); }
+
+/* ----- brief ----- */
+
+.brief {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.blurb {
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+  color: var(--ink-muted);
+}
+
+.keys {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+}
+
+.keys span { margin-right: var(--sp-4); }
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--sp-3);
+  background: var(--surface-overlay);
+  border: 1px solid var(--line);
+  border-bottom-color: var(--line-strong);
+  border-radius: var(--r-xs);
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+}
+
