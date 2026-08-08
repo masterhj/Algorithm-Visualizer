@@ -311,6 +311,47 @@ const Algo = (function () {
     yield { op: 'miss' };
   }
 
+  function* weighted(walls, start, goal, heuristic) {
+    const rows = walls.length, cols = walls[0].length;
+    const dist = new Map([[start[0] * cols + start[1], 0]]);
+    const prev = new Map();
+    const settled = new Set();
+    const open = new Heap();
+    open.push({ r: start[0], c: start[1], f: heuristic(start[0], start[1]) });
+    yield { op: 'edge', r: start[0], c: start[1] };
+
+    while (open.size) {
+      const cur = open.pop();
+      const k = cur.r * cols + cur.c;
+      if (settled.has(k)) continue;           // stale entry from an earlier, worse path
+      settled.add(k);
+      yield { op: 'seen', r: cur.r, c: cur.c };
+      if (cur.r === goal[0] && cur.c === goal[1]) return yield { op: 'trail', cells: trace(prev, goal, cols) };
+
+      for (const [nr, nc] of around(cur.r, cur.c, rows, cols)) {
+        const nk = nr * cols + nc;
+        if (walls[nr][nc] || settled.has(nk)) continue;
+        const step = dist.get(k) + 1;
+        if (step >= (dist.has(nk) ? dist.get(nk) : Infinity)) continue;
+        dist.set(nk, step);
+        prev.set(nk, k);
+        open.push({ r: nr, c: nc, f: step + heuristic(nr, nc) });
+        yield { op: 'edge', r: nr, c: nc };
+      }
+    }
+    yield { op: 'miss' };
+  }
+
+  const dijkstra = (walls, start, goal) => weighted(walls, start, goal, () => 0);
+
+  const astar = (walls, start, goal) =>
+    weighted(walls, start, goal, (r, c) => Math.abs(r - goal[0]) + Math.abs(c - goal[1]));
+
+  /* Recursive division: split the region with a wall, punch one gap in it, then
+     repeat on both sides.
+     Walls only ever land on even rows/columns and gaps only on odd ones. That
+     parity is what keeps the maze connected — without it a later perpendicular
+     wall can run straight through an earlier gap and seal a region off. */
 
   return {};
 })();
