@@ -33,6 +33,39 @@ const Algo = (function () {
     yield { op: 'settle' };
   }
 
+  function* insertion(a) {
+    for (let i = 1; i < a.length; i++) {
+      const key = a[i];
+      let j = i - 1;
+      while (j >= 0) {
+        yield { op: 'cmp', a: j, b: i };
+        if (a[j] <= key) break;
+        a[j + 1] = a[j];
+        yield { op: 'write', i: j + 1, v: a[j] };
+        j--;
+      }
+      a[j + 1] = key;
+      yield { op: 'write', i: j + 1, v: key };
+    }
+    yield { op: 'settle' };
+  }
+
+  function* selection(a) {
+    for (let i = 0; i < a.length - 1; i++) {
+      let min = i;
+      for (let j = i + 1; j < a.length; j++) {
+        yield { op: 'cmp', a: min, b: j };
+        if (a[j] < a[min]) min = j;
+      }
+      if (min !== i) {
+        swap(a, i, min);
+        yield { op: 'swap', a: i, b: min };
+      }
+      yield { op: 'lock', i };
+    }
+    yield { op: 'settle' };
+  }
+
 
   return {};
 })();
