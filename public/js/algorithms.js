@@ -14,6 +14,25 @@ const Algo = (function () {
 
   const swap = (a, i, j) => { const t = a[i]; a[i] = a[j]; a[j] = t; };
 
+  /* ---------------------------------------------------------------- sorting */
+
+  function* bubble(a) {
+    for (let end = a.length - 1; end > 0; end--) {
+      let moved = false;
+      for (let i = 0; i < end; i++) {
+        yield { op: 'cmp', a: i, b: i + 1 };
+        if (a[i] > a[i + 1]) {
+          swap(a, i, i + 1);
+          yield { op: 'swap', a: i, b: i + 1 };
+          moved = true;
+        }
+      }
+      yield { op: 'lock', i: end };
+      if (!moved) break;
+    }
+    yield { op: 'settle' };
+  }
+
 
   return {};
 })();
