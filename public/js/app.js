@@ -70,5 +70,81 @@
 
   const elapsed = () => (performance.now() - clock - frozen) / 1000;
 
+  /* ------------------------------------------------------------------ chrome */
+
+  function flash(text, kind) {
+    el.flash.textContent = text;
+    el.flash.className = 'flash is-up' + (kind ? ' is-' + kind : '');
+    clearTimeout(flash.timer);
+    flash.timer = setTimeout(() => { el.flash.className = 'flash'; }, 2600);
+  }
+
+  function buildDeck() {
+    el.deck.innerHTML = '';
+    for (const algo of Algo.catalog[state.mode]) {
+      const item = document.createElement('button');
+      item.className = 'seg-item' + (algo.id === state.algo.id ? ' is-on' : '');
+      item.setAttribute('role', 'tab');
+      item.setAttribute('aria-selected', String(algo.id === state.algo.id));
+      item.innerHTML = '<span class="nm"></span><span class="cx"></span>';
+      item.querySelector('.nm').textContent = algo.name;
+      item.querySelector('.cx').textContent = algo.time;
+      item.addEventListener('click', () => choose(algo));
+      el.deck.appendChild(item);
+    }
+  }
+
+  function buildLegend() {
+    el.legend.innerHTML = '';
+    for (const [varName, text] of LEGENDS[state.mode]) {
+      const row = document.createElement('li');
+      row.innerHTML = '<span class="sw"></span><span></span>';
+      row.querySelector('.sw').style.setProperty('--c', `var(${varName})`);
+      row.lastElementChild.textContent = text;
+      el.legend.appendChild(row);
+    }
+  }
+
+  function buildReadout() {
+    el.readout.innerHTML = '';
+    for (const [key, label] of METRICS[state.mode]) {
+      const cell = document.createElement('div');
+      cell.className = 'metric';
+      cell.dataset.key = key;
+      cell.innerHTML = '<span class="metric-k"></span><span class="metric-v">—</span>';
+      cell.querySelector('.metric-k').textContent = label;
+      el.readout.appendChild(cell);
+    }
+  }
+
+  function paintReadout() {
+    if (state.running) tally.time = elapsed().toFixed(2) + 's';
+    for (const cell of el.readout.children) {
+      const value = tally[cell.dataset.key];
+      const blank = value === undefined || value === null || value === '';
+      const out = cell.lastElementChild;
+      out.textContent = blank ? '—' : value;
+      out.className = 'metric-v' + (blank ? ' is-idle' : '');
+    }
+  }
+
+  function syncControls() {
+    const busy = state.running && !state.paused;
+    el.runIcon.setAttribute('href', busy ? '#i-pause' : '#i-play');
+    el.run.setAttribute('aria-label', busy ? 'Pause' : 'Run');
+    el.run.classList.toggle('is-running', busy);
+    el.step.disabled = busy;
+    el.shuffle.disabled = state.running;
+    el.size.disabled = state.running || state.mode === 'path';
+  }
+
+  function setPaused(on) {
+    if (on === state.paused || !state.running) return;
+    state.paused = on;
+    if (on) pausedAt = performance.now();
+    else frozen += performance.now() - pausedAt;
+    syncControls();
+  }
+
 
 })();
