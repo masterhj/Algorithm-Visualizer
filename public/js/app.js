@@ -423,5 +423,138 @@
     }
   }
 
+  /* ---------------------------------------------------------------- run loop */
+
+  function resetTally() {
+    for (const key of Object.keys(tally)) delete tally[key];
+    Object.assign(tally, { steps: 0, access: 0, time: '0.00s', cx: state.algo.time });
+    if (state.mode === 'sort') Object.assign(tally, { cmp: 0, writes: 0 });
+    else if (state.mode === 'search') Object.assign(tally, { probes: 0, target: state.target });
+    else Object.assign(tally, { visited: 0, frontier: 0, path: null });
+  }
+
+  // Built once and kept, so the step control can advance the same run.
+  function ensureRun() {
+    if (gen) return gen;
+
+    if (state.mode === 'path') {
+      clearTrace();
+      resetTally();
+      gen = state.algo.run(state.walls, state.start, state.goal);
+    } else {
+      state.work = state.values.slice();
+      for (const bar of bars) bar.classList.remove('is-done', 'is-found', 'is-scan');
+      douse();
+      if (state.mode === 'search') {
+        if (state.target === null) state.target = state.values[Math.floor(Math.random() * state.values.length)];
+        resetTally();
+        gen = state.algo.run(state.work, state.target);
+      } else {
+        resetTally();
+        gen = state.algo.run(state.work);
+      }
+    }
+
+    clock = performance.now();
+    frozen = 0;
+    pausedAt = 0;
+    return gen;
+  }
+
+  async function pump(run, mine) {
+    for (;;) {
+      if (mine !== state.token) return false;
+      if (state.paused) { await sleep(70); continue; }
+
+      const ms = STEP_MS[+el.speed.value - 1];
+      const burst = ms < FRAME_MS ? Math.max(1, Math.round(FRAME_MS / ms)) : 1;
+      // Elements only travel when there is a frame to see it in.
+      const travel = burst === 1 && !calm.matches && bars.length <= 90;
+
+      for (let n = 0; n < burst; n++) {
+        const next = run.next();
+        if (next.done) return true;
+        apply(next.value, travel);
+        if (mine !== state.token) return false;
+      }
+      paintReadout();
+      await (burst > 1 ? frame() : sleep(ms));
+    }
+  }
+
+  async function start() {
+    if (state.running) { setPaused(!state.paused); return; }
+
+    const mine = ++state.token;
+    const run = ensureRun();
+
+    state.running = true;
+    state.paused = false;
+    syncControls();
+    paintReadout();
+
+    const completed = await pump(run, mine);
+
+    if (mine !== state.token) return;    // reset or a newer run took over
+    state.running = false;
+    state.paused = false;
+    tally.time = elapsed().toFixed(2) + 's';
+    syncControls();
+    paintReadout();
+    if (completed) finish();
+  }
+
+  function stepOnce() {
+    if (state.running) return;
+    const run = ensureRun();
+    const next = run.next();
+    if (next.done) { finish(); return; }
+    apply(next.value, !calm.matches && bars.length <= 90);
+    tally.time = elapsed().toFixed(2) + 's';
+    paintReadout();
+  }
+
+  function finish() {
+    gen = null;
+    if (state.mode !== 'path') state.values = state.work.slice();
+    announce();
+    record();
+  }
+
+  function announce() {
+    if (state.mode === 'sort') {
+      flash(`${state.algo.name} · ${tally.cmp} comparisons · ${tally.time}`, 'good');
+    } else if (state.mode === 'search') {
+      const hit = tally.found !== null && tally.found !== undefined;
+      flash(hit ? `Found ${state.target} at index ${tally.found} · ${tally.probes} probes`
+                : `${state.target} is not in the array`, hit ? 'good' : 'bad');
+    } else {
+      flash(tally.path ? `Route found · ${tally.path} cells · ${tally.visited} explored`
+                       : 'No route to the goal', tally.path ? 'good' : 'bad');
+    }
+  }
+
+  function record() {
+    fetch('api/runs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: state.mode,
+        algorithm: state.algo.id,
+        size: state.mode === 'path' ? cells.length * cells[0].length : state.values.length,
+        comparisons: tally.cmp || tally.probes || tally.visited || 0,
+        writes: tally.writes || tally.path || 0,
+        elapsed: parseFloat(tally.time) || 0
+      })
+    }).catch(() => { /* history is a nicety; never let it break the page */ });
+  }
+
+  function halt() {
+    state.token++;
+    state.running = false;
+    state.paused = false;
+    gen = null;
+  }
+
 
 })();
