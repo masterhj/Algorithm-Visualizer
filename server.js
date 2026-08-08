@@ -1,51 +1,42 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
-const path = require('path');
+'use strict';
 
-dotenv.config();
+require('dotenv').config();
+
+const path = require('path');
+const express = require('express');
+const db = require('./config/db');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const port = Number(process.env.PORT) || 3001;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.disable('x-powered-by');
+app.use(express.json({ limit: '16kb' }));
 
-// Serve static files from the root directory
-app.use(express.static(path.join(__dirname)));
+// Only public/ is reachable over HTTP — server sources and .env sit outside it.
+// No max-age: ETags still spare the bytes, without pinning a stale index.html.
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Import routes
-const algorithmRoutes = require('./routes/algorithms');
-const visualizationRoutes = require('./routes/visualizations');
+app.use('/api', require('./routes/api'));
 
-// Use routes
-app.use('/api/algorithms', algorithmRoutes);
-app.use('/api/visualizations', visualizationRoutes);
+app.use('/api', (req, res) => res.status(404).json({ error: 'no such endpoint' }));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'Server is running', timestamp: new Date() });
-});
-
-// Serve index.html for root path
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+  // A body express could not parse is the caller's problem, not ours.
+  if (err.type === 'entity.parse.failed' || err.type === 'entity.too.large') {
+    return res.status(400).json({ error: 'bad request body' });
+  }
+  console.error(err);
+  res.status(500).json({ error: 'internal error' });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Algorithm Visualizer Server running on http://localhost:${PORT}`);
-    console.log('Environment:', process.env.NODE_ENV);
+db.init().then(() => {
+  const server = app.listen(port, () => {
+    console.log('listening on http://localhost:' + port);
+  });
+
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, () => {
+      server.close(() => db.close().then(() => process.exit(0)));
+    });
+  }
 });
