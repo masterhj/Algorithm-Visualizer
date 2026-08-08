@@ -35,3 +35,15 @@ test('sorting leaves the array ordered', () => {
   }
 });
 
+test('sorting never touches an index outside the array', () => {
+  for (const algo of catalog.sort) {
+    const work = rand(60);
+    for (const step of algo.run(work)) {
+      for (const i of [step.a, step.b, step.i]) {
+        if (i === undefined) continue;
+        assert.ok(i >= 0 && i < work.length, `${algo.id} addressed index ${i}`);
+      }
+    }
+  }
+});
+
