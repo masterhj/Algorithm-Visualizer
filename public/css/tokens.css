@@ -97,4 +97,27 @@
 
   --danger: hsl(4 72% 58%);   /* unreachable / not-found only */
 
+  /* --- algorithm state ----------------------------------------------------
+     One vocabulary, shared by bars, grid cells and legend alike. Every
+     visualizer reads from these names and nothing else. */
+
+  --state-idle:    #33333C;   /* untouched data */
+  --state-scan:    #1E1E24;   /* eliminated / already-swept region */
+  --state-wall:    #3A3A45;   /* terrain, not a state: neutral and elevated */
+
+  /* Explored ground is tinted toward the accent at very low saturation, so
+     "the algorithm has been here" stays legible against neutral terrain
+     without spending a second hue on it. */
+  --state-visit:   hsl(var(--accent-h) 28% 19%);
+  --state-compare: var(--accent);        /* being read */
+  --state-move:    var(--accent-bright); /* being written or swapped */
+  --state-pivot:   var(--accent-deep);   /* held reference */
+  --state-done:    var(--cool);          /* sorted, settled */
+  --state-found:   var(--cool-bright);   /* target hit, final path */
+
+  /* Extruded faces derive from whichever state colour a bar currently carries,
+     so a new state needs no new face colours. */
+  --face-top:  78%;   /* remainder mixed toward white */
+  --face-side: 62%;   /* remainder mixed toward black */
+
 }
