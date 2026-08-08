@@ -146,5 +146,86 @@
     syncControls();
   }
 
+  /* --------------------------------------------------------------- bar scene */
+
+  function drawBars() {
+    el.rack.innerHTML = '';
+    bars = [];
+    const n = state.values.length;
+
+    for (let i = 0; i < n; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = state.values[i] + '%';
+      const tag = document.createElement('span');
+      tag.className = 'bar-tag';
+      tag.textContent = state.values[i];
+      bar.appendChild(tag);
+      if (state.mode === 'search') bar.addEventListener('click', () => pickTarget(i));
+      el.rack.appendChild(bar);
+      bars.push(bar);
+
+      if (!calm.matches) {
+        bar.animate(
+          [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
+          { duration: 220, delay: i * parseFloat(token('--stagger') || 14), easing: 'cubic-bezier(.2,0,0,1)', fill: 'backwards' }
+        );
+      }
+    }
+
+    el.rack.classList.toggle('is-sparse', n <= 32);
+    el.rack.classList.toggle('is-pickable', state.mode === 'search');
+
+    const gap = n > 90 ? 1 : RACK_GAP;
+    el.rack.style.setProperty('--rack-gap', gap + 'px');
+
+    const width = (el.rack.clientWidth - gap * (n - 1)) / n;
+    pitch = width + gap;
+    // Extrusion tracks bar width, or a dense array reads as a solid slab.
+    el.rack.style.setProperty('--extrude', Math.max(2, Math.min(12, width * 0.42)).toFixed(1) + 'px');
+  }
+
+  function height(i) {
+    bars[i].style.height = state.work[i] + '%';
+    const tag = bars[i].firstChild;
+    if (tag) tag.textContent = state.work[i];
+  }
+
+  // FLIP: the two elements exchange places in the DOM, then are inverted by the
+  // distance they just jumped and released, so they physically travel. Offsets
+  // come from the known pitch rather than getBoundingClientRect, which keeps a
+  // swap off the layout path entirely.
+  function swapBars(i, j, travel) {
+    const a = bars[i], b = bars[j];
+    const marker = document.createComment('');
+    a.replaceWith(marker);
+    b.replaceWith(a);
+    marker.replaceWith(b);
+    bars[i] = b;
+    bars[j] = a;
+
+    if (!travel) return;
+    const dx = (j - i) * pitch;
+    const opts = { duration: TRAVEL_MS, easing: SPRING, composite: 'add' };
+    a.animate([{ transform: `translateX(${-dx}px)` }, { transform: 'translateX(0px)' }], opts);
+    b.animate([{ transform: `translateX(${dx}px)` }, { transform: 'translateX(0px)' }], opts);
+  }
+
+  function douse() {
+    for (const bar of lit) bar.classList.remove('is-compare', 'is-move');
+    lit = [];
+  }
+
+  function light(i, cls) {
+    const bar = bars[i];
+    if (!bar) return;
+    bar.classList.add(cls);
+    lit.push(bar);
+  }
+
+  function windowTo(lo, hi) {
+    for (let i = 0; i < bars.length; i++) bars[i].classList.toggle('is-scan', i < lo || i > hi);
+  }
+
 
 })();
