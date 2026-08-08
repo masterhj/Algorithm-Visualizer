@@ -47,8 +47,80 @@
     </div>
   </header>
 
+  <aside class="rail">
+    <section class="block">
+      <h2 class="label">Algorithm</h2>
+      <div class="seg seg-stack" id="deck" role="tablist" aria-label="Algorithm"></div>
+    </section>
+
+    <section class="block">
+      <h2 class="label">Parameters</h2>
+      <div class="field">
+        <div class="field-top">
+          <label for="size">Array size</label>
+          <output class="num" id="sizeOut" for="size">48</output>
+        </div>
+        <input type="range" id="size" min="8" max="140" value="48">
+      </div>
+      <div class="field">
+        <div class="field-top">
+          <label for="speed">Speed</label>
+          <output class="num" id="speedOut" for="speed">8</output>
+        </div>
+        <input type="range" id="speed" min="1" max="10" value="8">
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="label">Transport</h2>
+      <div class="transport">
+        <button class="ibtn ibtn-primary" id="run" aria-label="Run" title="Run  (space)">
+          <svg class="icon"><use href="#i-play" id="runIcon"/></svg>
+        </button>
+        <button class="ibtn" id="step" aria-label="Step" title="Step one operation  (→)">
+          <svg class="icon"><use href="#i-step"/></svg>
+        </button>
+        <button class="ibtn" id="shuffle" aria-label="Shuffle" title="New data  (s)">
+          <svg class="icon"><use href="#i-shuffle"/></svg>
+        </button>
+        <button class="ibtn" id="reset" aria-label="Reset" title="Reset  (r)">
+          <svg class="icon"><use href="#i-reset"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section class="block block-end">
+      <h2 class="label">Legend</h2>
+      <ul class="legend" id="legend"></ul>
+    </section>
+  </aside>
+
+  <main class="stage">
+    <div class="readout" id="readout"></div>
+
+    <div class="canvas" id="canvas">
+      <div class="floor" aria-hidden="true"></div>
+      <div class="plane" id="plane">
+        <div class="rack" id="rack"></div>
+        <div class="grid" id="grid" hidden></div>
+      </div>
+      <div class="flash" id="flash" role="status" aria-live="polite"></div>
+    </div>
+
+    <footer class="brief">
+      <p class="blurb" id="blurb"></p>
+      <div class="keys">
+        <kbd>space</kbd><span>run</span>
+        <kbd>&rarr;</kbd><span>step</span>
+        <kbd>r</kbd><span>reset</span>
+        <kbd>s</kbd><span>shuffle</span>
+      </div>
+    </footer>
+  </main>
+
 </div>
 
 <script src="js/algorithms.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
