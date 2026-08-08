@@ -97,3 +97,69 @@ ul { margin: 0; padding: 0; list-style: none; }
   letter-spacing: var(--track-tight);
 }
 
+/* ================================================= segmented controls ==== */
+
+.seg {
+  display: inline-flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+
+.seg-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--h-control);
+  padding: 0 var(--sp-5);
+  border-radius: var(--r-xs);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
+}
+
+.seg-item:hover { color: var(--ink-bright); background: var(--surface-hover); }
+
+.seg-item.is-on {
+  color: var(--ink-bright);
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-1);
+}
+
+.seg-item.is-on .icon { color: var(--accent); }
+
+/* Vertical variant: one continuous instrument list, hairline-separated. */
+.seg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+
+.seg-stack .seg-item {
+  height: auto;
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: 0;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.seg-stack .seg-item + .seg-item { border-top: 1px solid var(--line-faint); }
+
+.seg-stack .seg-item.is-on {
+  background: var(--accent-wash);
+  /* Marker is inset, so the row never shifts when it activates. */
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.seg-item .nm { font-size: var(--text-sm); }
+.seg-item .cx { font-size: var(--text-2xs); color: var(--ink-faint); }
+.seg-stack .seg-item.is-on .cx { color: var(--accent-text); }
+
