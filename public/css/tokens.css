@@ -1,0 +1,220 @@
+/* =============================================================================
+   Design tokens
+   -----------------------------------------------------------------------------
+   Rules this file encodes, so components never have to decide:
+
+   1. Neutrals carry the interface. Exactly one accent hue exists, and it is
+      spent only on active algorithm state and the primary action.
+   2. Algorithm state is expressed as saturation/lightness moves along that one
+      hue, plus one cool tone for "settled". Activity reads warm, resolved reads
+      cool — a temperature axis, not six unrelated colours.
+   3. Surfaces separate with 1px low-opacity lines. Shadow means elevation, and
+      elevation is rare.
+   4. Radii shrink with density: the denser the control, the tighter the corner.
+
+   Components consume these only. No hex, no magic numbers below this file.
+   ========================================================================== */
+
+:root {
+
+  /* --- type ---------------------------------------------------------------
+     Geist for UI, JetBrains Mono for anything numeric. Every value, index,
+     complexity string and counter is mono + tabular so digits hold their
+     column while they animate. */
+
+  --font-ui:   'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-2xs: 11px;   /* uppercase micro-labels, key hints */
+  --text-xs:  12px;   /* dense chrome: readouts, captions, table text */
+  --text-sm:  13px;   /* default UI text, buttons, list rows */
+  --text-md:  15px;   /* prose, algorithm description */
+  --text-lg:  20px;   /* panel titles */
+  --text-xl:  32px;   /* the single largest number on screen */
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.35;
+  --leading-body:  1.55;
+
+  /* Headings pull in, micro-labels push out. */
+  --track-tight:  -0.02em;
+  --track-tighter:-0.03em;
+  --track-label:   0.06em;
+  --track-mono:   -0.01em;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+
+  /* --- surface ------------------------------------------------------------
+     Near-black with a cool cast, never pure #000. Each step is a real plane in
+     the stack; skipping steps is what makes an interface look flat. */
+
+  --surface-sunken:  #08080A;   /* wells: the canvas floor, slider tracks */
+  --surface-base:    #0A0A0B;   /* app ground */
+  --surface-raised:  #0F0F12;   /* panels, sidebar, readout strip */
+  --surface-overlay: #141418;   /* controls resting on a panel */
+  --surface-hover:   #1A1A1F;
+  --surface-active:  #212127;
+
+  /* --- line ---------------------------------------------------------------
+     Structure comes from these, not from shadows. */
+
+  --line-faint:  rgba(255, 255, 255, 0.055);
+  --line:        rgba(255, 255, 255, 0.085);
+  --line-strong: rgba(255, 255, 255, 0.14);
+
+  /* --- ink ----------------------------------------------------------------- */
+
+  --ink-bright: #ECECEF;   /* primary values, headings */
+  --ink:        #B2B2BA;   /* body */
+  --ink-muted:  #7A7A85;   /* secondary, inactive controls */
+  --ink-faint:  #52525C;   /* micro-labels, disabled */
+
+  /* --- accent -------------------------------------------------------------
+     Declared as HSL channels so the whole system re-tunes from one hue, and so
+     state variants are provably saturation/lightness moves rather than new
+     colours picked by hand. */
+
+  --accent-h: 33;
+  --accent-s: 96%;
+
+  --accent:        hsl(var(--accent-h) var(--accent-s) 56%);
+  --accent-bright: hsl(var(--accent-h) calc(var(--accent-s) - 14%) 72%);
+  --accent-deep:   hsl(var(--accent-h) var(--accent-s) 40%);
+  --accent-sunk:   hsl(var(--accent-h) calc(var(--accent-s) - 30%) 22%);
+  --accent-ink:    hsl(var(--accent-h) 90% 8%);           /* text on accent fill */
+  --accent-text:   hsl(var(--accent-h) 60% 62%);          /* accent-tinted copy */
+  --accent-edge:   hsl(var(--accent-h) var(--accent-s) 76% / 0.5);  /* inner hairline */
+  --accent-line:   hsl(var(--accent-h) var(--accent-s) 56% / 0.40);
+  --accent-wash:   hsl(var(--accent-h) var(--accent-s) 56% / 0.10);
+
+  /* Settled/resolved. The one cool tone, sitting opposite the accent. */
+  --cool-h: 168;
+  --cool-s: 62%;
+  --cool:        hsl(var(--cool-h) var(--cool-s) 46%);
+  --cool-bright: hsl(var(--cool-h) calc(var(--cool-s) - 12%) 62%);
+
+  --danger: hsl(4 72% 58%);   /* unreachable / not-found only */
+
+  /* --- algorithm state ----------------------------------------------------
+     One vocabulary, shared by bars, grid cells and legend alike. Every
+     visualizer reads from these names and nothing else. */
+
+  --state-idle:    #33333C;   /* untouched data */
+  --state-scan:    #1E1E24;   /* eliminated / already-swept region */
+  --state-wall:    #3A3A45;   /* terrain, not a state: neutral and elevated */
+
+  /* Explored ground is tinted toward the accent at very low saturation, so
+     "the algorithm has been here" stays legible against neutral terrain
+     without spending a second hue on it. */
+  --state-visit:   hsl(var(--accent-h) 28% 19%);
+  --state-compare: var(--accent);        /* being read */
+  --state-move:    var(--accent-bright); /* being written or swapped */
+  --state-pivot:   var(--accent-deep);   /* held reference */
+  --state-done:    var(--cool);          /* sorted, settled */
+  --state-found:   var(--cool-bright);   /* target hit, final path */
+
+  /* Extruded faces derive from whichever state colour a bar currently carries,
+     so a new state needs no new face colours. */
+  --face-top:  78%;   /* remainder mixed toward white */
+  --face-side: 62%;   /* remainder mixed toward black */
+
+  /* --- space --------------------------------------------------------------
+     Density is deliberate: chrome uses 1–3, content uses 4–6. */
+
+  --sp-1:  2px;
+  --sp-2:  4px;
+  --sp-3:  6px;
+  --sp-4:  8px;
+  --sp-5:  12px;
+  --sp-6:  16px;
+  --sp-7:  20px;
+  --sp-8:  24px;
+  --sp-9:  32px;
+
+  /* --- radius -------------------------------------------------------------
+     Tighter as elements get denser. Nothing is uniformly rounded. */
+
+  --r-bar:   2px;    /* data marks */
+  --r-xs:    3px;    /* cells, chips, key caps */
+  --r-sm:    5px;    /* buttons, inputs, segment items */
+  --r-md:    7px;    /* panels */
+  --r-lg:    10px;   /* the canvas */
+  --r-pill:  999px;  /* slider thumb only */
+
+  /* --- elevation ----------------------------------------------------------
+     Stacked, tight, low-opacity. A single wide blur is the giveaway of a card
+     that is not actually raised. */
+
+  --shadow-sink:  inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-1:     0 1px 1px rgba(0, 0, 0, 0.30),
+                  0 2px 3px rgba(0, 0, 0, 0.22);
+  --shadow-2:     0 1px 1px rgba(0, 0, 0, 0.32),
+                  0 2px 5px rgba(0, 0, 0, 0.26),
+                  0 6px 12px -4px rgba(0, 0, 0, 0.34);
+  --shadow-lift:  0 1px 1px rgba(0, 0, 0, 0.34),
+                  0 4px 8px rgba(0, 0, 0, 0.30),
+                  0 12px 22px -8px rgba(0, 0, 0, 0.44);
+
+  /* --- motion -------------------------------------------------------------
+     Durations are short because motion here reports state, it does not
+     decorate. --ease-spring is a sampled mass-spring (stiffness 400, damping
+     30, mass 1): settles in 267ms with 2.8% overshoot. Used for elements
+     physically travelling; everything else uses --ease-out. */
+
+  --t-instant: 90ms;
+  --t-fast:    140ms;
+  --t-base:    180ms;
+  --t-slow:    220ms;
+  --t-travel:  280ms;   /* must match the spring's settle time */
+
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in:  cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: linear(
+    0, 0.0208, 0.0745, 0.15, 0.2382, 0.3321, 0.4265, 0.5174, 0.6023,
+    0.6795, 0.748, 0.8076, 0.8583, 0.9006, 0.9351, 0.9627, 0.9842,
+    1.0003, 1.012, 1.0199, 1.0249, 1.0276, 1.0284, 1.0278, 1.0264,
+    1.0242, 1
+  );
+
+  --stagger: 14ms;   /* per-item entrance offset */
+
+  /* --- dimension ----------------------------------------------------------- */
+
+  --h-control:    28px;
+  --h-control-sm: 22px;
+  --w-sidebar:    268px;
+  --stroke-icon:  1.5;   /* Lucide stroke width, applied at 16px */
+
+  /* --- 3D ------------------------------------------------------------------
+     The plane tilts once, at the canvas. Marks inherit it and extrude. */
+
+  --perspective:  1200px;
+  --plane-tilt:   8deg;    /* rotateX on the data plane */
+  --plane-swing:  0deg;    /* rotateY, driven by pointer at runtime */
+  --extrude:      10px;    /* depth of a bar's side/top faces */
+  --lift-sm:      4px;     /* frontier cells, barely off the floor */
+  --lift-hover:   6px;     /* translateZ on interaction — never scale */
+  --lift-terrain: 8px;     /* walls: standing geometry, not a state */
+  --lift-active:  18px;
+
+  --floor-dot: rgba(255, 255, 255, 0.032);   /* spatial grounding, under 4% */
+}
+
+/* Motion communicates state, so it is reduced rather than removed: transitions
+   collapse to a snap, but colour still changes and nothing is left mid-flight. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-instant: 1ms;
+    --t-fast:    1ms;
+    --t-base:    1ms;
+    --t-slow:    1ms;
+    --t-travel:  1ms;
+    --stagger:   0ms;
+    --ease-spring: linear(0, 1);
+    --plane-tilt: 0deg;
+    --lift-hover: 0px;
+    --lift-active: 0px;
+  }
+}

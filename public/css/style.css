@@ -1,0 +1,642 @@
+/* Consumes tokens.css only — no literal colours, sizes or timings below. */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-base);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2 { margin: 0; font-weight: var(--weight-medium); letter-spacing: var(--track-tight); }
+p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* Anything numeric holds its column while it animates. */
+.num, .mono, kbd, .metric-v, .bar-tag, .seg-item .cx {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--track-mono);
+  font-feature-settings: 'zero' 1;
+}
+
+.label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--stroke-icon);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:where(button, [role='tab'], input):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ============================================================ layout ===== */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--w-sidebar) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'top top' 'rail stage';
+  height: 100vh;
+}
+
+/* ============================================================ topbar ===== */
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  height: 48px;
+  padding: 0 var(--sp-5);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: var(--sp-4); }
+
+.brand-mark {
+  width: 15px;
+  height: 15px;
+  border-radius: var(--r-xs);
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-edge);
+}
+
+.brand h1 {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-bright);
+  letter-spacing: var(--track-tight);
+}
+
+/* ================================================= segmented controls ==== */
+
+.seg {
+  display: inline-flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+
+.seg-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--h-control);
+  padding: 0 var(--sp-5);
+  border-radius: var(--r-xs);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out);
+}
+
+.seg-item:hover { color: var(--ink-bright); background: var(--surface-hover); }
+
+.seg-item.is-on {
+  color: var(--ink-bright);
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-1);
+}
+
+.seg-item.is-on .icon { color: var(--accent); }
+
+/* Vertical variant: one continuous instrument list, hairline-separated. */
+.seg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+
+.seg-stack .seg-item {
+  height: auto;
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: 0;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.seg-stack .seg-item + .seg-item { border-top: 1px solid var(--line-faint); }
+
+.seg-stack .seg-item.is-on {
+  background: var(--accent-wash);
+  /* Marker is inset, so the row never shifts when it activates. */
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.seg-item .nm { font-size: var(--text-sm); }
+.seg-item .cx { font-size: var(--text-2xs); color: var(--ink-faint); }
+.seg-stack .seg-item.is-on .cx { color: var(--accent-text); }
+
+/* ============================================================== rail ===== */
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-7);
+  padding: var(--sp-6) var(--sp-5);
+  background: var(--surface-raised);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.rail::-webkit-scrollbar { width: 6px; }
+.rail::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--r-pill); }
+
+.block { display: flex; flex-direction: column; gap: var(--sp-4); }
+.block-end { margin-top: auto; }
+
+/* ----- sliders ----- */
+
+.field { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.field-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.field-top label { font-size: var(--text-xs); color: var(--ink-muted); }
+
+.field-top .num {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--ink-bright);
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  background: none;
+  cursor: ew-resize;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--r-bar);
+  background: var(--surface-sunken);
+  box-shadow: var(--shadow-sink);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: var(--r-pill);
+  background: var(--ink-bright);
+  box-shadow: var(--shadow-1);
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+input[type='range']:hover::-webkit-slider-thumb { box-shadow: var(--shadow-1), 0 0 0 3px var(--accent-wash); }
+input[type='range']:active::-webkit-slider-thumb { background: var(--accent); }
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: var(--r-bar);
+  background: var(--surface-sunken);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ink-bright);
+}
+
+input[type='range']:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ----- transport ----- */
+
+.transport { display: flex; gap: var(--sp-3); }
+
+.ibtn {
+  display: grid;
+  place-items: center;
+  width: var(--h-control);
+  height: var(--h-control);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-overlay);
+  color: var(--ink);
+  cursor: pointer;
+  transform: translateZ(0);
+  transition: background var(--t-fast) var(--ease-out),
+              border-color var(--t-fast) var(--ease-out),
+              color var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out),
+              box-shadow var(--t-fast) var(--ease-out);
+}
+
+.ibtn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--line-strong);
+  color: var(--ink-bright);
+  /* Lift, never scale. */
+  transform: translateZ(var(--lift-hover)) translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.ibtn:active:not(:disabled) { transform: translateZ(0) translateY(0); box-shadow: none; }
+.ibtn:disabled { opacity: 0.32; cursor: not-allowed; }
+
+.ibtn-primary {
+  flex: 1;
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.ibtn-primary:hover:not(:disabled) {
+  background: var(--accent-bright);
+  border-color: transparent;
+  color: var(--accent-ink);
+}
+
+.ibtn-primary.is-running { background: var(--accent-deep); color: var(--ink-bright); }
+
+/* ----- legend ----- */
+
+.legend { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+}
+
+.legend .sw {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 1px;
+  background: var(--c);
+}
+
+/* ============================================================= stage ===== */
+
+.stage {
+  grid-area: stage;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  min-width: 0;
+  padding: var(--sp-5);
+}
+
+/* ----- readout strip ----- */
+
+.readout {
+  display: flex;
+  flex: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.metric {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.metric + .metric { border-left: 1px solid var(--line-faint); }
+
+.metric-k {
+  display: block;
+  font-size: var(--text-2xs);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-v {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--ink-bright);
+  letter-spacing: var(--track-tight);
+  white-space: nowrap;
+}
+
+.metric-v.is-idle { color: var(--ink-faint); }
+.metric-v.is-live { color: var(--accent); }
+.metric-v.is-good { color: var(--state-found); }
+.metric-v.is-bad  { color: var(--danger); }
+
+/* ----- 3D canvas ----- */
+
+.canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sink);
+  overflow: hidden;
+  perspective: var(--perspective);
+  perspective-origin: 50% 46%;
+}
+
+/* Spatial grounding only — kept under 4% so it never competes with data. */
+.floor {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--floor-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Alpha stencil, not a colour: black here just means "fully opaque". */
+  mask-image: linear-gradient(transparent, black 55%);
+  -webkit-mask-image: linear-gradient(transparent, black 55%);
+}
+
+.plane {
+  position: absolute;
+  inset: var(--sp-8) var(--sp-7) var(--sp-7);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--plane-tilt)) rotateY(var(--plane-swing));
+}
+
+/* ----- bars ----- */
+
+.rack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--rack-gap, 2px);
+  transform-style: preserve-3d;
+}
+
+.bar {
+  --c: var(--state-idle);
+  position: relative;
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--c);
+  border-radius: var(--r-bar) var(--r-bar) 0 0;
+  transform-style: preserve-3d;
+  transition: height var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out);
+}
+
+/* Extruded solid: the element is the front face, the pseudo-elements fold
+   back to form the top and right sides. Both derive from --c, so a new state
+   never needs new face colours. */
+.bar::before,
+.bar::after {
+  content: '';
+  position: absolute;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.bar::before {
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: var(--extrude);
+  transform-origin: bottom center;
+  transform: rotateX(90deg);
+  border-radius: var(--r-bar) var(--r-bar) 0 0;
+  background: color-mix(in srgb, var(--c) var(--face-top), #fff);
+}
+
+.bar::after {
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: var(--extrude);
+  transform-origin: left center;
+  transform: rotateY(90deg);
+  background: color-mix(in srgb, var(--c) var(--face-side), #000);
+}
+
+.bar.is-scan    { --c: var(--state-scan); }
+.bar.is-compare { --c: var(--state-compare); transform: translateZ(var(--lift-hover)); }
+.bar.is-move    { --c: var(--state-move);    transform: translateZ(var(--lift-active)); }
+.bar.is-pivot   { --c: var(--state-pivot); }
+.bar.is-done    { --c: var(--state-done); }
+
+.bar.is-found {
+  --c: var(--state-found);
+  transform: translateZ(calc(var(--lift-active) * 1.6));
+}
+
+.bar-tag {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, calc(-1 * var(--extrude) - 4px));
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.rack.is-sparse .bar-tag { opacity: 1; }
+.rack.is-pickable .bar { cursor: pointer; }
+.rack.is-pickable .bar:hover { --c: var(--state-move); }
+
+/* ----- pathfinding grid ----- */
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  transform-style: preserve-3d;
+}
+
+.cell {
+  --c: var(--surface-overlay);
+  aspect-ratio: 1;
+  border-radius: var(--r-xs);
+  background: var(--c);
+  transition: background var(--t-base) var(--ease-out),
+              transform var(--t-base) var(--ease-out);
+}
+
+.cell.is-wall {
+  --c: var(--state-wall);
+  transform: translateZ(var(--lift-terrain));
+  box-shadow: var(--shadow-1);
+}
+
+.cell.is-frontier { --c: var(--state-compare); transform: translateZ(var(--lift-sm)); }
+.cell.is-visited  { --c: var(--state-visit); }
+
+.cell.is-path {
+  --c: var(--state-found);
+  transform: translateZ(var(--lift-active));
+  box-shadow: var(--shadow-1);
+}
+
+.cell.is-start { --c: var(--cool); transform: translateZ(var(--lift-active)); }
+.cell.is-goal  { --c: var(--accent-deep); transform: translateZ(var(--lift-active)); }
+
+/* ----- brief ----- */
+
+.brief {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.blurb {
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+  color: var(--ink-muted);
+}
+
+.keys {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+}
+
+.keys span { margin-right: var(--sp-4); }
+
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--sp-3);
+  background: var(--surface-overlay);
+  border: 1px solid var(--line);
+  border-bottom-color: var(--line-strong);
+  border-radius: var(--r-xs);
+  font-size: var(--text-2xs);
+  color: var(--ink-muted);
+}
+
+/* ----- flash -----
+   Lives inside the canvas as a status overlay on the instrument, which keeps
+   it clear of the brief strip without depending on that strip's height. */
+
+.flash {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-6);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-6);
+  background: var(--surface-overlay);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-lift);
+  font-size: var(--text-xs);
+  color: var(--ink-bright);
+  opacity: 0;
+  transform: translate(-50%, var(--sp-4));
+  pointer-events: none;
+  transition: opacity var(--t-base) var(--ease-out),
+              transform var(--t-base) var(--ease-out);
+}
+
+.flash.is-up { opacity: 1; transform: translate(-50%, 0); }
+.flash::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--ink-faint);
+}
+.flash.is-good::before { background: var(--state-found); }
+.flash.is-bad::before  { background: var(--danger); }
+
+/* ============================================================ narrow ===== */
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: 'top' 'rail' 'stage';
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .topbar { flex-wrap: wrap; height: auto; padding: var(--sp-4) var(--sp-5); }
+
+  .rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-6);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow: visible;
+  }
+
+  .block-end { margin-top: 0; }
+  .canvas { min-height: 340px; }
+  .brief { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .readout { flex-wrap: wrap; }
+  .metric { flex-basis: 50%; border-top: 1px solid var(--line-faint); }
+  .keys { flex-wrap: wrap; }
+}
