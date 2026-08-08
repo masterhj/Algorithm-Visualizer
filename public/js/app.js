@@ -227,5 +227,105 @@
     for (let i = 0; i < bars.length; i++) bars[i].classList.toggle('is-scan', i < lo || i > hi);
   }
 
+  /* -------------------------------------------------------------- grid scene */
+
+  function drawGrid() {
+    const room = el.plane.clientWidth;
+    const headroom = el.plane.clientHeight;
+
+    let cols = Math.max(15, Math.min(61, Math.floor(room / 24)));
+    if (cols % 2 === 0) cols--;
+
+    // Cells are square and sized by the columns, so rows must come from the
+    // height that is left — otherwise the end rows land outside the clipped
+    // canvas where they cannot be seen or clicked.
+    const cell = (room - (cols - 1) * GRID_GAP) / cols;
+    let rows = Math.max(9, Math.floor((headroom + GRID_GAP) / (cell + GRID_GAP)));
+    if (rows % 2 === 0) rows--;
+
+    let mid = rows >> 1;
+    if (mid % 2 === 0) mid++;
+    state.start = [mid, 1];
+    state.goal = [mid, cols - 2];
+    state.walls = Array.from({ length: rows }, () => new Array(cols).fill(false));
+
+    el.grid.innerHTML = '';
+    el.grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    cells = [];
+
+    for (let r = 0; r < rows; r++) {
+      cells[r] = [];
+      for (let c = 0; c < cols; c++) {
+        const node = document.createElement('div');
+        node.className = 'cell';
+        el.grid.appendChild(node);
+        cells[r][c] = node;
+      }
+    }
+    paintGrid();
+  }
+
+  function paintGrid() {
+    const [sr, sc] = state.start, [gr, gc] = state.goal;
+    for (let r = 0; r < cells.length; r++) {
+      for (let c = 0; c < cells[r].length; c++) {
+        let cls = 'cell';
+        if (r === sr && c === sc) cls += ' is-start';
+        else if (r === gr && c === gc) cls += ' is-goal';
+        else if (state.walls[r][c]) cls += ' is-wall';
+        cells[r][c].className = cls;
+      }
+    }
+  }
+
+  function clearTrace() {
+    for (const row of cells) {
+      for (const node of row) node.classList.remove('is-frontier', 'is-visited', 'is-path');
+    }
+  }
+
+  // Click-drag to draw or erase walls; the first cell decides which.
+  function wallPainting() {
+    let painting = false;
+    let adding = true;
+
+    const at = e => {
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      if (!hit || !hit.classList.contains('cell')) return null;
+      for (let r = 0; r < cells.length; r++) {
+        const c = cells[r].indexOf(hit);
+        if (c >= 0) return [r, c];
+      }
+      return null;
+    };
+
+    const paint = pos => {
+      if (!pos) return;
+      const [r, c] = pos;
+      const isEnd = (r === state.start[0] && c === state.start[1]) ||
+                    (r === state.goal[0] && c === state.goal[1]);
+      if (isEnd || state.walls[r][c] === adding) return;
+      state.walls[r][c] = adding;
+      cells[r][c].classList.toggle('is-wall', adding);
+    };
+
+    el.grid.addEventListener('pointerdown', e => {
+      if (state.running) return;
+      const pos = at(e);
+      if (!pos) return;
+      adding = !state.walls[pos[0]][pos[1]];
+      painting = true;
+      paint(pos);
+      // Capture keeps the drag alive past the grid edge; it is a convenience,
+      // so never let it swallow the stroke.
+      try { el.grid.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    });
+
+    el.grid.addEventListener('pointermove', e => { if (painting) paint(at(e)); });
+    const stop = () => { painting = false; };
+    el.grid.addEventListener('pointerup', stop);
+    el.grid.addEventListener('pointercancel', stop);
+  }
+
 
 })();
