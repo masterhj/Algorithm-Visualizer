@@ -82,3 +82,32 @@ test('generated mazes stay fully connected', () => {
   }
 });
 
+test('every route is a legal walk and the optimal ones agree', () => {
+  const rows = 17, cols = 41, start = [1, 1], goal = [rows - 2, cols - 2];
+
+  for (let trial = 0; trial < 15; trial++) {
+    const walls = maze(rows, cols, [start, goal]);
+    const length = {};
+
+    for (const algo of catalog.path) {
+      const trail = drain(algo.run(walls, start, goal)).find(s => s.op === 'trail');
+      assert.ok(trail, `${algo.id} found no route through a connected maze`);
+
+      const cells = trail.cells;
+      assert.deepEqual(cells[0], start, `${algo.id} did not begin at the start`);
+      assert.deepEqual(cells[cells.length - 1], goal, `${algo.id} did not end at the goal`);
+
+      for (let i = 1; i < cells.length; i++) {
+        const hop = Math.abs(cells[i][0] - cells[i - 1][0]) + Math.abs(cells[i][1] - cells[i - 1][1]);
+        assert.equal(hop, 1, `${algo.id} teleported at step ${i}`);
+        assert.ok(!walls[cells[i][0]][cells[i][1]], `${algo.id} walked through a wall`);
+      }
+      length[algo.id] = cells.length;
+    }
+
+    assert.equal(length.dijkstra, length.bfs, 'Dijkstra disagreed with BFS on the shortest route');
+    assert.equal(length.astar, length.bfs, 'A* disagreed with BFS on the shortest route');
+    assert.ok(length.dfs >= length.bfs, 'DFS beat the shortest possible route');
+  }
+});
+
