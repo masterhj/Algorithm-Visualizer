@@ -571,3 +571,40 @@ kbd {
   color: var(--ink-muted);
 }
 
+/* ----- flash -----
+   Lives inside the canvas as a status overlay on the instrument, which keeps
+   it clear of the brief strip without depending on that strip's height. */
+
+.flash {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sp-6);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-6);
+  background: var(--surface-overlay);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-lift);
+  font-size: var(--text-xs);
+  color: var(--ink-bright);
+  opacity: 0;
+  transform: translate(-50%, var(--sp-4));
+  pointer-events: none;
+  transition: opacity var(--t-base) var(--ease-out),
+              transform var(--t-base) var(--ease-out);
+}
+
+.flash.is-up { opacity: 1; transform: translate(-50%, 0); }
+.flash::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--ink-faint);
+}
+.flash.is-good::before { background: var(--state-found); }
+.flash.is-bad::before  { background: var(--danger); }
+
