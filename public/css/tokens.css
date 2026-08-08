@@ -143,4 +143,18 @@
   --r-lg:    10px;   /* the canvas */
   --r-pill:  999px;  /* slider thumb only */
 
+  /* --- elevation ----------------------------------------------------------
+     Stacked, tight, low-opacity. A single wide blur is the giveaway of a card
+     that is not actually raised. */
+
+  --shadow-sink:  inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-1:     0 1px 1px rgba(0, 0, 0, 0.30),
+                  0 2px 3px rgba(0, 0, 0, 0.22);
+  --shadow-2:     0 1px 1px rgba(0, 0, 0, 0.32),
+                  0 2px 5px rgba(0, 0, 0, 0.26),
+                  0 6px 12px -4px rgba(0, 0, 0, 0.34);
+  --shadow-lift:  0 1px 1px rgba(0, 0, 0, 0.34),
+                  0 4px 8px rgba(0, 0, 0, 0.30),
+                  0 12px 22px -8px rgba(0, 0, 0, 0.44);
+
 }
