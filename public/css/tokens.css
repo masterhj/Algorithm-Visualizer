@@ -201,3 +201,20 @@
 
   --floor-dot: rgba(255, 255, 255, 0.032);   /* spatial grounding, under 4% */
 }
+
+/* Motion communicates state, so it is reduced rather than removed: transitions
+   collapse to a snap, but colour still changes and nothing is left mid-flight. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-instant: 1ms;
+    --t-fast:    1ms;
+    --t-base:    1ms;
+    --t-slow:    1ms;
+    --t-travel:  1ms;
+    --stagger:   0ms;
+    --ease-spring: linear(0, 1);
+    --plane-tilt: 0deg;
+    --lift-hover: 0px;
+    --lift-active: 0px;
+  }
+}
