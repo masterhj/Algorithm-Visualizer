@@ -207,6 +207,60 @@ const Algo = (function () {
     yield { op: 'miss' };
   }
 
+  /* ------------------------------------------------------------ pathfinding */
+
+  class Heap {
+    constructor() { this.a = []; }
+    get size() { return this.a.length; }
+    push(node) {
+      const a = this.a;
+      a.push(node);
+      let i = a.length - 1;
+      while (i > 0) {
+        const p = (i - 1) >> 1;
+        if (a[p].f <= a[i].f) break;
+        [a[p], a[i]] = [a[i], a[p]];
+        i = p;
+      }
+    }
+    pop() {
+      const a = this.a, top = a[0], last = a.pop();
+      if (a.length) {
+        a[0] = last;
+        let i = 0;
+        for (;;) {
+          const l = 2 * i + 1, r = l + 1;
+          let m = i;
+          if (l < a.length && a[l].f < a[m].f) m = l;
+          if (r < a.length && a[r].f < a[m].f) m = r;
+          if (m === i) break;
+          [a[m], a[i]] = [a[i], a[m]];
+          i = m;
+        }
+      }
+      return top;
+    }
+  }
+
+  function around(r, c, rows, cols) {
+    const out = [];
+    if (r > 0) out.push([r - 1, c]);
+    if (r < rows - 1) out.push([r + 1, c]);
+    if (c > 0) out.push([r, c - 1]);
+    if (c < cols - 1) out.push([r, c + 1]);
+    return out;
+  }
+
+  function trace(prev, goal, cols) {
+    const cells = [];
+    let k = goal[0] * cols + goal[1];
+    while (k !== undefined) {
+      cells.unshift([Math.floor(k / cols), k % cols]);
+      k = prev.get(k);
+    }
+    return cells;
+  }
+
 
   return {};
 })();
