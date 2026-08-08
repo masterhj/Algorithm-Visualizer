@@ -327,5 +327,101 @@
     el.grid.addEventListener('pointercancel', stop);
   }
 
+  /* -------------------------------------------------------------- step apply */
+
+  function apply(step, travel) {
+    tally.steps++;
+    if (ACCESS[step.op]) tally.access += ACCESS[step.op];
+
+    switch (step.op) {
+      case 'cmp':
+        douse();
+        light(step.a, 'is-compare');
+        light(step.b, 'is-compare');
+        tally.cmp++;
+        break;
+
+      case 'swap':
+        douse();
+        swapBars(step.a, step.b, travel);
+        light(step.a, 'is-move');
+        light(step.b, 'is-move');
+        tally.writes += 2;
+        break;
+
+      case 'write':
+        douse();
+        height(step.i);
+        light(step.i, 'is-move');
+        tally.writes++;
+        break;
+
+      case 'pivot':
+        if (pivot) pivot.classList.remove('is-pivot');
+        pivot = bars[step.i];
+        if (pivot) pivot.classList.add('is-pivot');
+        break;
+
+      case 'lock':
+        if (pivot) { pivot.classList.remove('is-pivot'); pivot = null; }
+        if (bars[step.i]) bars[step.i].classList.add('is-done');
+        break;
+
+      case 'settle':
+        douse();
+        if (pivot) { pivot.classList.remove('is-pivot'); pivot = null; }
+        for (const bar of bars) bar.classList.add('is-done');
+        break;
+
+      case 'probe':
+        douse();
+        light(step.i, 'is-compare');
+        tally.probes++;
+        break;
+
+      case 'window':
+        windowTo(step.lo, step.hi);
+        break;
+
+      case 'hit':
+        douse();
+        windowTo(0, bars.length - 1);
+        if (bars[step.i]) bars[step.i].classList.add('is-found');
+        tally.found = step.i;
+        break;
+
+      case 'miss':
+        douse();
+        windowTo(0, bars.length - 1);
+        tally.found = null;
+        break;
+
+      case 'edge':
+        cells[step.r][step.c].classList.add('is-frontier');
+        tally.frontier++;
+        break;
+
+      case 'seen':
+        cells[step.r][step.c].classList.remove('is-frontier');
+        cells[step.r][step.c].classList.add('is-visited');
+        tally.frontier = Math.max(0, tally.frontier - 1);
+        tally.visited++;
+        break;
+
+      case 'trail':
+        step.cells.forEach(([r, c], i) => {
+          const node = cells[r][c];
+          node.classList.remove('is-visited', 'is-frontier');
+          node.classList.add('is-path');
+          if (!calm.matches) {
+            node.animate([{ opacity: 0.35 }, { opacity: 1 }],
+              { duration: 200, delay: i * 12, easing: 'cubic-bezier(.2,0,0,1)', fill: 'backwards' });
+          }
+        });
+        tally.path = step.cells.length;
+        break;
+    }
+  }
+
 
 })();
