@@ -261,6 +261,56 @@ const Algo = (function () {
     return cells;
   }
 
+  function* bfs(walls, start, goal) {
+    const rows = walls.length, cols = walls[0].length;
+    const prev = new Map();
+    const seen = new Set([start[0] * cols + start[1]]);
+    const queue = [start];
+    yield { op: 'edge', r: start[0], c: start[1] };
+
+    while (queue.length) {
+      const [r, c] = queue.shift();
+      yield { op: 'seen', r, c };
+      if (r === goal[0] && c === goal[1]) return yield { op: 'trail', cells: trace(prev, goal, cols) };
+
+      for (const [nr, nc] of around(r, c, rows, cols)) {
+        const k = nr * cols + nc;
+        if (walls[nr][nc] || seen.has(k)) continue;
+        seen.add(k);
+        prev.set(k, r * cols + c);
+        queue.push([nr, nc]);
+        yield { op: 'edge', r: nr, c: nc };
+      }
+    }
+    yield { op: 'miss' };
+  }
+
+  function* dfs(walls, start, goal) {
+    const rows = walls.length, cols = walls[0].length;
+    const prev = new Map();
+    const seen = new Set([start[0] * cols + start[1]]);
+    const stack = [start];
+    yield { op: 'edge', r: start[0], c: start[1] };
+
+    while (stack.length) {
+      const [r, c] = stack.pop();
+      yield { op: 'seen', r, c };
+      if (r === goal[0] && c === goal[1]) return yield { op: 'trail', cells: trace(prev, goal, cols) };
+
+      for (const [nr, nc] of around(r, c, rows, cols)) {
+        const k = nr * cols + nc;
+        if (walls[nr][nc] || seen.has(k)) continue;
+        // Claim the cell the moment it is discovered, so each one keeps exactly
+        // one parent and the reconstructed trail is always a real walk.
+        seen.add(k);
+        prev.set(k, r * cols + c);
+        stack.push([nr, nc]);
+        yield { op: 'edge', r: nr, c: nc };
+      }
+    }
+    yield { op: 'miss' };
+  }
+
 
   return {};
 })();
