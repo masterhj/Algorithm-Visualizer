@@ -151,6 +151,29 @@ const Algo = (function () {
     }
   }
 
+  /* -------------------------------------------------------------- searching */
+  /* All four assume `a` is sorted ascending — the caller guarantees it. */
+
+  function* linear(a, t) {
+    for (let i = 0; i < a.length; i++) {
+      yield { op: 'probe', i };
+      if (a[i] === t) return yield { op: 'hit', i };
+    }
+    yield { op: 'miss' };
+  }
+
+  function* binary(a, t) {
+    let lo = 0, hi = a.length - 1;
+    while (lo <= hi) {
+      yield { op: 'window', lo, hi };
+      const mid = (lo + hi) >> 1;
+      yield { op: 'probe', i: mid };
+      if (a[mid] === t) return yield { op: 'hit', i: mid };
+      if (a[mid] < t) lo = mid + 1; else hi = mid - 1;
+    }
+    yield { op: 'miss' };
+  }
+
 
   return {};
 })();
