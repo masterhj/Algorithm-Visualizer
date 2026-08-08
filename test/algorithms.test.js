@@ -70,3 +70,15 @@ test('searching finds present values and reports absent ones', () => {
   }
 });
 
+test('generated mazes stay fully connected', () => {
+  for (const [rows, cols] of [[5, 5], [9, 13], [17, 41], [21, 55]]) {
+    const start = [1, 1];
+    const goal = [rows - 2, cols - 2];
+    for (let trial = 0; trial < 15; trial++) {
+      const walls = maze(rows, cols, [start, goal]);
+      const steps = drain(catalog.path[0].run(walls, start, goal));
+      assert.ok(steps.some(s => s.op === 'trail'), `${rows}x${cols} maze sealed the goal off`);
+    }
+  }
+});
+
