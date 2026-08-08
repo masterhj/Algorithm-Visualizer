@@ -122,3 +122,16 @@ test('a walled-off goal is reported rather than searched forever', () => {
   }
 });
 
+test('catalogue entries are complete and uniquely named', () => {
+  const ids = new Set();
+  for (const mode of Object.keys(catalog)) {
+    for (const algo of catalog[mode]) {
+      assert.ok(!ids.has(algo.id), `duplicate id ${algo.id}`);
+      ids.add(algo.id);
+      for (const field of ['name', 'time', 'space', 'blurb']) {
+        assert.ok(algo[field], `${algo.id} is missing ${field}`);
+      }
+      assert.equal(typeof algo.run, 'function');
+    }
+  }
+});
