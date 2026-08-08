@@ -352,6 +352,45 @@ const Algo = (function () {
      Walls only ever land on even rows/columns and gaps only on odd ones. That
      parity is what keeps the maze connected — without it a later perpendicular
      wall can run straight through an earlier gap and seal a region off. */
+  function maze(rows, cols, keepClear) {
+    const walls = Array.from({ length: rows }, () => new Array(cols).fill(false));
+    carve(0, rows - 1, 0, cols - 1);
+
+    for (const [r, c] of keepClear) {
+      walls[r][c] = false;
+      for (const [nr, nc] of around(r, c, rows, cols)) walls[nr][nc] = false;
+    }
+    return walls;
+
+    // Lowest value in [lo, hi] matching `parity`, chosen at random; -1 if none.
+    function slot(lo, hi, parity) {
+      const first = lo % 2 === parity ? lo : lo + 1;
+      if (first > hi) return -1;
+      return first + 2 * Math.floor(Math.random() * (Math.floor((hi - first) / 2) + 1));
+    }
+
+    function carve(r1, r2, c1, c2) {
+      const h = r2 - r1 + 1, w = c2 - c1 + 1;
+      if (h < 3 || w < 3) return;
+
+      if (h > w || (h === w && Math.random() < 0.5)) {
+        const row = slot(r1 + 1, r2 - 1, 0);
+        const gap = slot(c1, c2, 1);
+        if (row < 0 || gap < 0) return;
+        for (let c = c1; c <= c2; c++) if (c !== gap) walls[row][c] = true;
+        carve(r1, row - 1, c1, c2);
+        carve(row + 1, r2, c1, c2);
+      } else {
+        const col = slot(c1 + 1, c2 - 1, 0);
+        const gap = slot(r1, r2, 1);
+        if (col < 0 || gap < 0) return;
+        for (let r = r1; r <= r2; r++) if (r !== gap) walls[r][col] = true;
+        carve(r1, r2, c1, col - 1);
+        carve(r1, r2, col + 1, c2);
+      }
+    }
+  }
+
 
   return {};
 })();
