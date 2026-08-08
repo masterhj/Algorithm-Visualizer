@@ -648,5 +648,78 @@
     paintReadout();
   }
 
+  /* ------------------------------------------------------------- plane swing */
+
+  let swing = 0, want = 0, spinning = 0;
+
+  function spin() {
+    if (spinning) return;
+    const tick = () => {
+      swing += (want - swing) * 0.12;
+      el.plane.style.setProperty('--plane-swing', swing.toFixed(2) + 'deg');
+      spinning = Math.abs(want - swing) > 0.03 ? requestAnimationFrame(tick) : 0;
+    };
+    spinning = requestAnimationFrame(tick);
+  }
+
+  el.canvas.addEventListener('pointermove', e => {
+    if (calm.matches) return;
+    const box = el.canvas.getBoundingClientRect();
+    want = ((e.clientX - box.left) / box.width - 0.5) * 12;
+    spin();
+  });
+
+  el.canvas.addEventListener('pointerleave', () => { want = 0; spin(); });
+
+  /* -------------------------------------------------------------------- wire */
+
+  el.modes.addEventListener('click', e => {
+    const tab = e.target.closest('button');
+    if (tab) setMode(tab.dataset.mode);
+  });
+
+  el.size.addEventListener('input', () => {
+    el.sizeOut.textContent = el.size.value;
+    if (!state.running) shuffle();
+  });
+
+  el.speed.addEventListener('input', () => { el.speedOut.textContent = el.speed.value; });
+
+  el.run.addEventListener('click', start);
+  el.step.addEventListener('click', stepOnce);
+  el.shuffle.addEventListener('click', shuffle);
+  el.reset.addEventListener('click', clear);
+
+  // A hidden tab gets no animation frames, so a run would sit there looking
+  // stuck. Pause it deliberately and let the viewer resume.
+  document.addEventListener('visibilitychange', () => { if (document.hidden) setPaused(true); });
+
+  document.addEventListener('keydown', e => {
+    // The target is not always an Element (it can be the document itself), so
+    // feature-test before asking it anything.
+    const node = e.target;
+    if (node instanceof Element && node.closest('input, select, textarea')) return;
+    const key = e.key.toLowerCase();
+    if (key === ' ') { e.preventDefault(); start(); }
+    else if (key === 'arrowright') { e.preventDefault(); stepOnce(); }
+    else if (key === 'r') clear();
+    else if (key === 's') shuffle();
+  });
+
+  let resizing;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizing);
+    resizing = setTimeout(() => {
+      if (state.running) return;
+      if (state.mode === 'path') {
+        drawGrid();
+        state.walls = Algo.maze(cells.length, cells[0].length, [state.start, state.goal]);
+        paintGrid();
+      } else {
+        drawBars();
+      }
+    }, 220);
+  });
+
 
 })();
