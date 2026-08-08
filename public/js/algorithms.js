@@ -126,6 +126,31 @@ const Algo = (function () {
     while (j < right.length) { a[k] = right[j++]; yield { op: 'write', i: k, v: a[k] }; k++; }
   }
 
+  function* heap(a) {
+    const n = a.length;
+    for (let i = (n >> 1) - 1; i >= 0; i--) yield* sift(a, n, i);
+    for (let end = n - 1; end > 0; end--) {
+      swap(a, 0, end);
+      yield { op: 'swap', a: 0, b: end };
+      yield { op: 'lock', i: end };
+      yield* sift(a, end, 0);
+    }
+    yield { op: 'settle' };
+  }
+
+  function* sift(a, n, i) {
+    for (;;) {
+      let big = i;
+      const l = 2 * i + 1, r = l + 1;
+      if (l < n) { yield { op: 'cmp', a: l, b: big }; if (a[l] > a[big]) big = l; }
+      if (r < n) { yield { op: 'cmp', a: r, b: big }; if (a[r] > a[big]) big = r; }
+      if (big === i) return;
+      swap(a, i, big);
+      yield { op: 'swap', a: i, b: big };
+      i = big;
+    }
+  }
+
 
   return {};
 })();
