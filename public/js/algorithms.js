@@ -391,8 +391,46 @@ const Algo = (function () {
     }
   }
 
+  /* --------------------------------------------------------------- catalogue */
 
-  return {};
+  const catalog = {
+    sort: [
+      { id: 'bubble', name: 'Bubble Sort', run: bubble, time: 'O(n²)', space: 'O(1)',
+        blurb: 'Walks the list trading neighbours that sit in the wrong order. Cheap to write, painful to watch — a full pass only guarantees one more value lands home.' },
+      { id: 'insertion', name: 'Insertion Sort', run: insertion, time: 'O(n²)', space: 'O(1)',
+        blurb: 'Grows a sorted region on the left, sliding each new value backwards until it fits. Genuinely quick on data that is already nearly in order.' },
+      { id: 'selection', name: 'Selection Sort', run: selection, time: 'O(n²)', space: 'O(1)',
+        blurb: 'Hunts down the smallest value left and drops it into place. Always makes n²/2 comparisons, but never more than n swaps — useful when writes are expensive.' },
+      { id: 'quick', name: 'Quick Sort', run: quick, time: 'O(n log n)', space: 'O(log n)',
+        blurb: 'Picks a pivot, herds smaller values left and larger right, then recurses on both halves. Fastest in practice; collapses to n² when the pivots keep landing badly.' },
+      { id: 'merge', name: 'Merge Sort', run: merge, time: 'O(n log n)', space: 'O(n)',
+        blurb: 'Splits all the way down to single elements, then stitches sorted runs back together. Dependably n log n, paid for with a scratch buffer.' },
+      { id: 'heap', name: 'Heap Sort', run: heap, time: 'O(n log n)', space: 'O(1)',
+        blurb: 'Rearranges the array into a max-heap, then repeatedly swaps the root to the back and re-sifts. n log n with no extra memory at all.' }
+    ],
+    search: [
+      { id: 'linear', name: 'Linear Search', run: linear, time: 'O(n)', space: 'O(1)',
+        blurb: 'Checks every slot from the left. Makes no assumptions about the data and asks nothing of it — it is simply slow.' },
+      { id: 'binary', name: 'Binary Search', run: binary, time: 'O(log n)', space: 'O(1)',
+        blurb: 'Halves the live window with every probe. Needs sorted input, and finds anything in a hundred values inside seven looks.' },
+      { id: 'jump', name: 'Jump Search', run: jump, time: 'O(√n)', space: 'O(1)',
+        blurb: 'Strides ahead in √n blocks until it overshoots the target, then scans back through that single block.' },
+      { id: 'interpolation', name: 'Interpolation Search', run: interpolation, time: 'O(log log n)', space: 'O(1)',
+        blurb: 'Guesses where the value ought to sit based on how far it falls between the two ends. Near instant on evenly spread data, no better than linear on clustered data.' }
+    ],
+    path: [
+      { id: 'bfs', name: 'Breadth-First', run: bfs, time: 'O(V + E)', space: 'O(V)',
+        blurb: 'Expands in even rings from the start, so the first moment it touches the goal it is already holding the shortest route.' },
+      { id: 'dfs', name: 'Depth-First', run: dfs, time: 'O(V + E)', space: 'O(V)',
+        blurb: 'Commits hard to one direction until it hits a dead end, then backs up and tries again. Finds a path; rarely finds a good one.' },
+      { id: 'dijkstra', name: "Dijkstra's", run: dijkstra, time: 'O(E log V)', space: 'O(V)',
+        blurb: 'Always expands whichever cell is currently closest to the start. On an even grid it traces the same rings as BFS — the priority queue is what makes it survive weights.' },
+      { id: 'astar', name: 'A* Search', run: astar, time: 'O(E log V)', space: 'O(V)',
+        blurb: 'Dijkstra handed a hint: cells are ranked by distance travelled plus the straight-line guess still to go, so it aims at the goal instead of flooding towards it.' }
+    ]
+  };
+
+  return { catalog, maze };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = Algo;
