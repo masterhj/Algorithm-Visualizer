@@ -1,0 +1,99 @@
+/* Consumes tokens.css only — no literal colours, sizes or timings below. */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-base);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-snug);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2 { margin: 0; font-weight: var(--weight-medium); letter-spacing: var(--track-tight); }
+p { margin: 0; }
+button { font: inherit; color: inherit; background: none; border: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+/* Anything numeric holds its column while it animates. */
+.num, .mono, kbd, .metric-v, .bar-tag, .seg-item .cx {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--track-mono);
+  font-feature-settings: 'zero' 1;
+}
+
+.label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--stroke-icon);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:where(button, [role='tab'], input):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ============================================================ layout ===== */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--w-sidebar) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'top top' 'rail stage';
+  height: 100vh;
+}
+
+/* ============================================================ topbar ===== */
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  height: 48px;
+  padding: 0 var(--sp-5);
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: var(--sp-4); }
+
+.brand-mark {
+  width: 15px;
+  height: 15px;
+  border-radius: var(--r-xs);
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-edge);
+}
+
+.brand h1 {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-bright);
+  letter-spacing: var(--track-tight);
+}
+
