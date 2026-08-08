@@ -556,5 +556,97 @@
     gen = null;
   }
 
+  /* ----------------------------------------------------------------- rebuild */
+
+  const values = n => Array.from({ length: n }, () => 4 + Math.floor(Math.random() * 97));
+
+  function shuffle() {
+    halt();
+    if (state.mode === 'path') {
+      state.walls = Algo.maze(cells.length, cells[0].length, [state.start, state.goal]);
+      clearTrace();
+      paintGrid();
+    } else {
+      state.values = values(+el.size.value);
+      if (state.mode === 'search') state.values.sort((a, b) => a - b);
+      state.target = null;
+      drawBars();
+    }
+    resetTally();
+    syncControls();
+    paintReadout();
+  }
+
+  function clear() {
+    halt();
+    if (state.mode !== 'path') { shuffle(); return; }
+    state.walls = state.walls.map(row => row.fill(false));
+    clearTrace();
+    paintGrid();
+    resetTally();
+    syncControls();
+    paintReadout();
+  }
+
+  function pickTarget(i) {
+    if (state.running) return;
+    halt();
+    state.target = state.values[i];
+    for (const bar of bars) bar.classList.remove('is-found', 'is-scan');
+    resetTally();
+    paintReadout();
+  }
+
+  function choose(algo) {
+    halt();
+    state.algo = algo;
+    for (const item of el.deck.children) {
+      const on = item.querySelector('.nm').textContent === algo.name;
+      item.classList.toggle('is-on', on);
+      item.setAttribute('aria-selected', String(on));
+    }
+    el.blurb.textContent = algo.blurb;
+    if (state.mode === 'path') clearTrace();
+    else { for (const bar of bars) bar.classList.remove('is-done', 'is-found', 'is-scan'); douse(); }
+    resetTally();
+    syncControls();
+    paintReadout();
+  }
+
+  function setMode(mode) {
+    if (mode === state.mode) return;
+    halt();
+    state.mode = mode;
+    state.algo = Algo.catalog[mode][0];
+    state.target = null;
+
+    for (const tab of el.modes.children) {
+      const on = tab.dataset.mode === mode;
+      tab.classList.toggle('is-on', on);
+      tab.setAttribute('aria-selected', String(on));
+    }
+
+    el.grid.hidden = mode !== 'path';
+    el.rack.hidden = mode === 'path';
+
+    buildDeck();
+    buildLegend();
+    buildReadout();
+    el.blurb.textContent = state.algo.blurb;
+
+    if (mode === 'path') {
+      drawGrid();
+      state.walls = Algo.maze(cells.length, cells[0].length, [state.start, state.goal]);
+      paintGrid();
+    } else {
+      state.values = values(+el.size.value);
+      if (mode === 'search') state.values.sort((a, b) => a - b);
+      drawBars();
+    }
+    resetTally();
+    syncControls();
+    paintReadout();
+  }
+
 
 })();
