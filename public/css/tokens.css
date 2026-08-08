@@ -180,4 +180,24 @@
 
   --stagger: 14ms;   /* per-item entrance offset */
 
+  /* --- dimension ----------------------------------------------------------- */
+
+  --h-control:    28px;
+  --h-control-sm: 22px;
+  --w-sidebar:    268px;
+  --stroke-icon:  1.5;   /* Lucide stroke width, applied at 16px */
+
+  /* --- 3D ------------------------------------------------------------------
+     The plane tilts once, at the canvas. Marks inherit it and extrude. */
+
+  --perspective:  1200px;
+  --plane-tilt:   8deg;    /* rotateX on the data plane */
+  --plane-swing:  0deg;    /* rotateY, driven by pointer at runtime */
+  --extrude:      10px;    /* depth of a bar's side/top faces */
+  --lift-sm:      4px;     /* frontier cells, barely off the floor */
+  --lift-hover:   6px;     /* translateZ on interaction — never scale */
+  --lift-terrain: 8px;     /* walls: standing geometry, not a state */
+  --lift-active:  18px;
+
+  --floor-dot: rgba(255, 255, 255, 0.032);   /* spatial grounding, under 4% */
 }
