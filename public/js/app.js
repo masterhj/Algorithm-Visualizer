@@ -721,5 +721,22 @@
     }, 220);
   });
 
+  /* -------------------------------------------------------------------- boot */
+
+  TRAVEL_MS = parseFloat(token('--t-travel')) || 280;
+  SPRING = token('--ease-spring') || 'ease-out';
+
+  wallPainting();
+  buildDeck();
+  buildLegend();
+  buildReadout();
+  el.blurb.textContent = state.algo.blurb;
+  el.sizeOut.textContent = el.size.value;
+  el.speedOut.textContent = el.speed.value;
+  state.values = values(+el.size.value);
+  drawBars();
+  resetTally();
+  syncControls();
+  paintReadout();
 
 })();
