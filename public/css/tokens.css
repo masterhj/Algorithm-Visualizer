@@ -1,0 +1,49 @@
+/* =============================================================================
+   Design tokens
+   -----------------------------------------------------------------------------
+   Rules this file encodes, so components never have to decide:
+
+   1. Neutrals carry the interface. Exactly one accent hue exists, and it is
+      spent only on active algorithm state and the primary action.
+   2. Algorithm state is expressed as saturation/lightness moves along that one
+      hue, plus one cool tone for "settled". Activity reads warm, resolved reads
+      cool — a temperature axis, not six unrelated colours.
+   3. Surfaces separate with 1px low-opacity lines. Shadow means elevation, and
+      elevation is rare.
+   4. Radii shrink with density: the denser the control, the tighter the corner.
+
+   Components consume these only. No hex, no magic numbers below this file.
+   ========================================================================== */
+
+:root {
+
+  /* --- type ---------------------------------------------------------------
+     Geist for UI, JetBrains Mono for anything numeric. Every value, index,
+     complexity string and counter is mono + tabular so digits hold their
+     column while they animate. */
+
+  --font-ui:   'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-2xs: 11px;   /* uppercase micro-labels, key hints */
+  --text-xs:  12px;   /* dense chrome: readouts, captions, table text */
+  --text-sm:  13px;   /* default UI text, buttons, list rows */
+  --text-md:  15px;   /* prose, algorithm description */
+  --text-lg:  20px;   /* panel titles */
+  --text-xl:  32px;   /* the single largest number on screen */
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.35;
+  --leading-body:  1.55;
+
+  /* Headings pull in, micro-labels push out. */
+  --track-tight:  -0.02em;
+  --track-tighter:-0.03em;
+  --track-label:   0.06em;
+  --track-mono:   -0.01em;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semi:    600;
+
+}
