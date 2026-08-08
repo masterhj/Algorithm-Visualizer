@@ -71,4 +71,30 @@
   --ink-muted:  #7A7A85;   /* secondary, inactive controls */
   --ink-faint:  #52525C;   /* micro-labels, disabled */
 
+  /* --- accent -------------------------------------------------------------
+     Declared as HSL channels so the whole system re-tunes from one hue, and so
+     state variants are provably saturation/lightness moves rather than new
+     colours picked by hand. */
+
+  --accent-h: 33;
+  --accent-s: 96%;
+
+  --accent:        hsl(var(--accent-h) var(--accent-s) 56%);
+  --accent-bright: hsl(var(--accent-h) calc(var(--accent-s) - 14%) 72%);
+  --accent-deep:   hsl(var(--accent-h) var(--accent-s) 40%);
+  --accent-sunk:   hsl(var(--accent-h) calc(var(--accent-s) - 30%) 22%);
+  --accent-ink:    hsl(var(--accent-h) 90% 8%);           /* text on accent fill */
+  --accent-text:   hsl(var(--accent-h) 60% 62%);          /* accent-tinted copy */
+  --accent-edge:   hsl(var(--accent-h) var(--accent-s) 76% / 0.5);  /* inner hairline */
+  --accent-line:   hsl(var(--accent-h) var(--accent-s) 56% / 0.40);
+  --accent-wash:   hsl(var(--accent-h) var(--accent-s) 56% / 0.10);
+
+  /* Settled/resolved. The one cool tone, sitting opposite the accent. */
+  --cool-h: 168;
+  --cool-s: 62%;
+  --cool:        hsl(var(--cool-h) var(--cool-s) 46%);
+  --cool-bright: hsl(var(--cool-h) calc(var(--cool-s) - 12%) 62%);
+
+  --danger: hsl(4 72% 58%);   /* unreachable / not-found only */
+
 }
