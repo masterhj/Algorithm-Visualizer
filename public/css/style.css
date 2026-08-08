@@ -373,3 +373,118 @@ input[type='range']:disabled { opacity: 0.4; cursor: not-allowed; }
 .metric-v.is-good { color: var(--state-found); }
 .metric-v.is-bad  { color: var(--danger); }
 
+/* ----- 3D canvas ----- */
+
+.canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sink);
+  overflow: hidden;
+  perspective: var(--perspective);
+  perspective-origin: 50% 46%;
+}
+
+/* Spatial grounding only — kept under 4% so it never competes with data. */
+.floor {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--floor-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Alpha stencil, not a colour: black here just means "fully opaque". */
+  mask-image: linear-gradient(transparent, black 55%);
+  -webkit-mask-image: linear-gradient(transparent, black 55%);
+}
+
+.plane {
+  position: absolute;
+  inset: var(--sp-8) var(--sp-7) var(--sp-7);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--plane-tilt)) rotateY(var(--plane-swing));
+}
+
+/* ----- bars ----- */
+
+.rack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--rack-gap, 2px);
+  transform-style: preserve-3d;
+}
+
+.bar {
+  --c: var(--state-idle);
+  position: relative;
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--c);
+  border-radius: var(--r-bar) var(--r-bar) 0 0;
+  transform-style: preserve-3d;
+  transition: height var(--t-fast) var(--ease-out),
+              background var(--t-fast) var(--ease-out),
+              transform var(--t-fast) var(--ease-out);
+}
+
+/* Extruded solid: the element is the front face, the pseudo-elements fold
+   back to form the top and right sides. Both derive from --c, so a new state
+   never needs new face colours. */
+.bar::before,
+.bar::after {
+  content: '';
+  position: absolute;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.bar::before {
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: var(--extrude);
+  transform-origin: bottom center;
+  transform: rotateX(90deg);
+  border-radius: var(--r-bar) var(--r-bar) 0 0;
+  background: color-mix(in srgb, var(--c) var(--face-top), #fff);
+}
+
+.bar::after {
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: var(--extrude);
+  transform-origin: left center;
+  transform: rotateY(90deg);
+  background: color-mix(in srgb, var(--c) var(--face-side), #000);
+}
+
+.bar.is-scan    { --c: var(--state-scan); }
+.bar.is-compare { --c: var(--state-compare); transform: translateZ(var(--lift-hover)); }
+.bar.is-move    { --c: var(--state-move);    transform: translateZ(var(--lift-active)); }
+.bar.is-pivot   { --c: var(--state-pivot); }
+.bar.is-done    { --c: var(--state-done); }
+
+.bar.is-found {
+  --c: var(--state-found);
+  transform: translateZ(calc(var(--lift-active) * 1.6));
+}
+
+.bar-tag {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, calc(-1 * var(--extrude) - 4px));
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.rack.is-sparse .bar-tag { opacity: 1; }
+.rack.is-pickable .bar { cursor: pointer; }
+.rack.is-pickable .bar:hover { --c: var(--state-move); }
+
