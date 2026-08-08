@@ -46,4 +46,29 @@
   --weight-medium:  500;
   --weight-semi:    600;
 
+  /* --- surface ------------------------------------------------------------
+     Near-black with a cool cast, never pure #000. Each step is a real plane in
+     the stack; skipping steps is what makes an interface look flat. */
+
+  --surface-sunken:  #08080A;   /* wells: the canvas floor, slider tracks */
+  --surface-base:    #0A0A0B;   /* app ground */
+  --surface-raised:  #0F0F12;   /* panels, sidebar, readout strip */
+  --surface-overlay: #141418;   /* controls resting on a panel */
+  --surface-hover:   #1A1A1F;
+  --surface-active:  #212127;
+
+  /* --- line ---------------------------------------------------------------
+     Structure comes from these, not from shadows. */
+
+  --line-faint:  rgba(255, 255, 255, 0.055);
+  --line:        rgba(255, 255, 255, 0.085);
+  --line-strong: rgba(255, 255, 255, 0.14);
+
+  /* --- ink ----------------------------------------------------------------- */
+
+  --ink-bright: #ECECEF;   /* primary values, headings */
+  --ink:        #B2B2BA;   /* body */
+  --ink-muted:  #7A7A85;   /* secondary, inactive controls */
+  --ink-faint:  #52525C;   /* micro-labels, disabled */
+
 }
