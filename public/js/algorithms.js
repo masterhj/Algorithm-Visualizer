@@ -101,6 +101,31 @@ const Algo = (function () {
     return i + 1;
   }
 
+  function* merge(a) {
+    yield* msort(a, 0, a.length - 1);
+    yield { op: 'settle' };
+  }
+
+  function* msort(a, lo, hi) {
+    if (lo >= hi) return;
+    const mid = (lo + hi) >> 1;
+    yield* msort(a, lo, mid);
+    yield* msort(a, mid + 1, hi);
+
+    const left = a.slice(lo, mid + 1);
+    const right = a.slice(mid + 1, hi + 1);
+    let i = 0, j = 0, k = lo;
+
+    while (i < left.length && j < right.length) {
+      yield { op: 'cmp', a: lo + i, b: mid + 1 + j };
+      a[k] = left[i] <= right[j] ? left[i++] : right[j++];
+      yield { op: 'write', i: k, v: a[k] };
+      k++;
+    }
+    while (i < left.length) { a[k] = left[i++]; yield { op: 'write', i: k, v: a[k] }; k++; }
+    while (j < right.length) { a[k] = right[j++]; yield { op: 'write', i: k, v: a[k] }; k++; }
+  }
+
 
   return {};
 })();
