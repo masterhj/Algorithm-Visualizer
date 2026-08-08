@@ -174,6 +174,39 @@ const Algo = (function () {
     yield { op: 'miss' };
   }
 
+  function* jump(a, t) {
+    const n = a.length;
+    const stride = Math.max(1, Math.floor(Math.sqrt(n)));
+    let lo = 0, hi = Math.min(stride, n) - 1;
+
+    while (hi < n - 1 && a[hi] < t) {
+      yield { op: 'probe', i: hi };
+      lo = hi + 1;
+      hi = Math.min(hi + stride, n - 1);
+    }
+    yield { op: 'window', lo, hi };
+    for (let i = lo; i <= hi; i++) {
+      yield { op: 'probe', i };
+      if (a[i] === t) return yield { op: 'hit', i };
+      if (a[i] > t) break;
+    }
+    yield { op: 'miss' };
+  }
+
+  function* interpolation(a, t) {
+    let lo = 0, hi = a.length - 1;
+    while (lo <= hi && t >= a[lo] && t <= a[hi]) {
+      yield { op: 'window', lo, hi };
+      // Flat span means the guess would divide by zero; fall back to the edge.
+      const span = a[hi] - a[lo];
+      const pos = span === 0 ? lo : lo + Math.floor((t - a[lo]) * (hi - lo) / span);
+      yield { op: 'probe', i: pos };
+      if (a[pos] === t) return yield { op: 'hit', i: pos };
+      if (a[pos] < t) lo = pos + 1; else hi = pos - 1;
+    }
+    yield { op: 'miss' };
+  }
+
 
   return {};
 })();
