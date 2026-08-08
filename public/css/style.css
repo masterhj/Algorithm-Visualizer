@@ -608,3 +608,35 @@ kbd {
 .flash.is-good::before { background: var(--state-found); }
 .flash.is-bad::before  { background: var(--danger); }
 
+/* ============================================================ narrow ===== */
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: 'top' 'rail' 'stage';
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .topbar { flex-wrap: wrap; height: auto; padding: var(--sp-4) var(--sp-5); }
+
+  .rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-6);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow: visible;
+  }
+
+  .block-end { margin-top: 0; }
+  .canvas { min-height: 340px; }
+  .brief { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .readout { flex-wrap: wrap; }
+  .metric { flex-basis: 50%; border-top: 1px solid var(--line-faint); }
+  .keys { flex-wrap: wrap; }
+}
